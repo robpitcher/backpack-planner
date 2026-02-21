@@ -272,8 +272,11 @@ export default function DashboardMap({
       } else {
         const el = document.createElement('div')
         el.className = 'dashboard-waypoint-marker'
-        el.style.cssText =
-          'width:14px;height:14px;border-radius:50%;background:#D97706;border:2px solid white;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform 0.15s;'
+        el.style.cssText = 'cursor:pointer;'
+        const dot = document.createElement('div')
+        dot.style.cssText =
+          'width:14px;height:14px;border-radius:50%;background:#D97706;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform 0.15s;'
+        el.appendChild(dot)
 
         el.addEventListener('click', (e) => {
           e.stopPropagation()
@@ -281,10 +284,10 @@ export default function DashboardMap({
           if (tripId) onWaypointClickRef.current?.(tripId, wp.id)
         })
         el.addEventListener('mouseenter', () => {
-          el.style.transform = 'scale(1.4)'
+          dot.style.transform = 'scale(1.4)'
         })
         el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1)'
+          dot.style.transform = 'scale(1)'
         })
 
         const marker = new maplibregl.Marker({ element: el })
