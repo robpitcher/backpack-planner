@@ -170,3 +170,26 @@
   - Reorder uses move up/down buttons rather than drag-and-drop for consistency with the assignment approach.
   - Notes editing is inline (click to edit) rather than a modal — keeps the UX lightweight.
   - Date computation uses trip start_date + day_number offset with timezone-safe `T00:00:00` parsing.
+
+### WI#12 — Conditions Tab (NWS Weather)
+- **API client:** `src/lib/api/conditions.ts` — `fetchWeatherForecast(lat, lng)` fetches 7-day forecast from NWS API. Two-step flow: GET /points/{lat},{lng} → get forecast URL → GET forecast. Parses day/night periods into paired forecast days with high/low temps. In-memory cache with 6-hour TTL. Handles rate limits, invalid coordinates (non-US), and network errors.
+- **ConditionsTab component:** `src/components/conditions/ConditionsTab.tsx` — sidebar tab displaying weather forecast cards. Each card shows: weather icon (Lucide), day name, date, high/low temps (unit-aware via formatTemperature), short forecast description, precipitation chance. Trip date overlap highlighted with orange styling and "Trip" badge. Loading spinner, error state with retry button, refresh button with "last updated" timestamp.
+- **TripPlannerPage updated:** Added 4th sidebar tab "Conditions" (CloudSun icon). Passes tripId, startDate, endDate props. Uses first waypoint's coordinates as forecast location.
+- **Design decisions:**
+  - NWS API chosen: free, no API key needed, US-only (sufficient for MVP).
+  - User-Agent header set to "TrailForge/1.0" per NWS API requirements.
+  - Forecast location uses first waypoint's coordinates — simple and accurate for trail weather.
+  - Cache key uses lat/lng rounded to 4 decimal places for consistent hits.
+  - Day/night NWS periods paired into single forecast days with high (daytime) and low (nighttime) temps.
+
+### WI#13 — Elevation Profile Chart
+- **Packages installed:** `recharts`, `@turf/along` (along not used directly in final impl — interpolation done manually for accuracy).
+- **ElevationProfile component:** `src/components/map/ElevationProfile.tsx` — collapsible panel below the map showing elevation vs distance line chart. Uses recharts (ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid).
+- **Features:** X-axis distance (mi/km), Y-axis elevation (ft/m) based on user's unit preference. 100-point sampling along route. Day boundaries shown as vertical orange dashed reference lines. Hover tooltip shows formatted distance + elevation. Stats row below chart: total gain, total loss, max elevation, min elevation.
+- **Elevation data:** Interpolates from route vertex Z-coordinates (GeoJSON/GPX elevation). Builds cumulative distance for each vertex, finds containing segment, linear interpolation. Assumes elevation in meters (standard GeoJSON), converts to feet for internal storage.
+- **Integration:** Rendered in both TripPlannerPage (below map, collapsible) and TripDetailPage (share view, read-only). Only renders when a route with ≥2 points exists. Responsive via recharts ResponsiveContainer.
+- **Design decisions:**
+  - Collapsible panel (not always visible) to preserve map real estate.
+  - 100 sample points for smooth profile without performance issues.
+  - Manual elevation interpolation instead of @turf/along (turf's along returns 2D points, doesn't preserve elevation).
+  - Stats computed from sampled points (gain/loss via sequential difference summing).
