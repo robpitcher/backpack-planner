@@ -175,14 +175,6 @@ export default function DashboardMap({
       }
 
       if (!tripId) {
-        // Zoom back out to fit all trip centroids
-        if (centroids.length > 0) {
-          const bounds = new maplibregl.LngLatBounds()
-          for (const c of centroids) {
-            bounds.extend([c.lng, c.lat])
-          }
-          map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 })
-        }
         return
       }
 
@@ -270,31 +262,54 @@ export default function DashboardMap({
       }
     }
 
-    // Fit bounds to route + waypoints when a trip is selected
-    if (selectedTripId && routeLayerRef.current === selectedTripId) {
-      const trip = trips.find((t) => t.id === selectedTripId)
-      const geojson = trip?.route_geojson as {
-        geometry?: { coordinates?: number[][] }
-      }
-      const routeCoords = geojson?.geometry?.coordinates || []
+  }, [mapReady, waypoints])
 
-      if (routeCoords.length > 0 || waypoints.length > 0) {
+  // Fly to selected trip — compute center from all available coords
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return
+    const map = mapRef.current
+
+    if (!selectedTripId) {
+      // Deselected — zoom back to all centroids
+      if (centroids.length > 0) {
         const bounds = new maplibregl.LngLatBounds()
-
-        // Include route coordinates
-        for (const [lng, lat] of routeCoords) {
-          bounds.extend([lng, lat])
-        }
-
-        // Include waypoint coordinates
-        for (const wp of waypoints) {
-          bounds.extend([wp.lng, wp.lat])
-        }
-
-        map.fitBounds(bounds, { padding: 80, duration: 800 })
+        for (const c of centroids) bounds.extend([c.lng, c.lat])
+        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 })
       }
+      return
     }
-  }, [mapReady, waypoints, selectedTripId, trips])
+
+    // Collect all coordinates: route, waypoints, or centroid as fallback
+    const allPoints: [number, number][] = []
+
+    const trip = trips.find((t) => t.id === selectedTripId)
+    const geojson = trip?.route_geojson as {
+      geometry?: { coordinates?: number[][] }
+    } | undefined
+    const routeCoords = geojson?.geometry?.coordinates
+    if (routeCoords) {
+      for (const [lng, lat] of routeCoords) allPoints.push([lng, lat])
+    }
+
+    for (const wp of waypoints) allPoints.push([wp.lng, wp.lat])
+
+    // Fallback: use the trip centroid if no route/waypoints yet
+    if (allPoints.length === 0) {
+      const centroid = centroids.find((c) => c.tripId === selectedTripId)
+      if (centroid) allPoints.push([centroid.lng, centroid.lat])
+    }
+
+    if (allPoints.length === 0) return
+
+    if (allPoints.length === 1) {
+      // Single point — flyTo with a reasonable zoom
+      map.flyTo({ center: allPoints[0], zoom: 12, duration: 800 })
+    } else {
+      const bounds = new maplibregl.LngLatBounds()
+      for (const pt of allPoints) bounds.extend(pt)
+      map.fitBounds(bounds, { padding: 80, duration: 800 })
+    }
+  }, [mapReady, selectedTripId, waypoints, trips, centroids])
 
   if (error) {
     return (
