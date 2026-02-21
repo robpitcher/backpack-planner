@@ -2,8 +2,7 @@
   "name": "TrailForge Dev",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/supabase/devcontainer-features/supabase-cli:1": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "hostRequirements": {
     "cpus": 4,
@@ -16,7 +15,7 @@
     "54322": { "label": "Supabase DB", "onAutoForward": "silent" },
     "54323": { "label": "Supabase Studio", "onAutoForward": "notify" }
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && npm install -g supabase",
   "postStartCommand": "cp -n .env.local.example .env.local 2>/dev/null; echo 'Ready — run: supabase start && npm run dev'",
   "customizations": {
     "vscode": {
