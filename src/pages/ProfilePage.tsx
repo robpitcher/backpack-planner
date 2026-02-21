@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { getUserProfile, updateUserProfile } from '@/lib/api/profile'
 import type { UpdateProfileInput } from '@/lib/api/profile'
@@ -18,10 +17,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import AppHeader from '@/components/AppHeader'
 
 export default function ProfilePage() {
   const { user, setPreferredUnits } = useAuthStore()
-  const navigate = useNavigate()
 
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -79,15 +78,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profile Settings</h1>
-        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-          ← Back
-        </Button>
-      </div>
+    <div className="min-h-screen bg-background">
+      <AppHeader />
 
-      <Card>
+      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+        <h1 className="mb-6 text-2xl font-bold tracking-tight">
+          Profile Settings
+        </h1>
+
+        <Card>
         <CardHeader>
           <CardTitle>Your Profile</CardTitle>
         </CardHeader>
@@ -158,7 +157,8 @@ export default function ProfilePage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </main>
     </div>
   )
 }
