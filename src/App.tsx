@@ -48,14 +48,7 @@ function App() {
             </AuthGuard>
           }
         />
-        <Route
-          path="/trip/:tripId"
-          element={
-            <AuthGuard>
-              <TripDetailPage />
-            </AuthGuard>
-          }
-        />
+        <Route path="/trip/:tripId" element={<TripDetailPage />} />
       </Routes>
       <Toaster />
     </BrowserRouter>
