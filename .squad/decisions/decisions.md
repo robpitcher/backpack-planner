@@ -296,3 +296,94 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 - `src/utils/units.ts` (112 lines, 8 functions + 4 formatters)
 - `src/utils/__tests__/units.test.ts` (182 lines, 39 tests)
 - `src/types/index.ts` (108 lines, 6 interfaces + 5 enums)
+
+---
+
+## Decision: Trip CRUD API Layer — Gimli (Work Item #8)
+
+**Author:** Gimli (Backend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Trip CRUD API functions in `src/lib/api/trips.ts`
+
+### Key Architectural Decisions
+
+1. **Separate ApiResult<T> wrapper (not reusing AuthResult<T>)**
+   - Data access functions return `PostgrestError`, not `AuthError`
+   - Created `ApiResult<T>` type with same `{ data, error }` shape but correct error type
+   - Keeps TypeScript honest — consumers get proper error typing without casting
+
+2. **RLS-only auth — no user_id in createTrip input**
+   - `createTrip` does not accept a `user_id` parameter
+   - Supabase RLS default value (`auth.uid()`) handles user assignment at database level
+   - API layer cannot accidentally create trips for other users
+
+3. **duplicateTrip is a shallow stub**
+   - Copies trip-level fields only (title, description, dates, region)
+   - Does NOT copy days, waypoints, gear items, or conditions (Item #31 scope)
+   - Copy resets to `draft` status and `is_public: false` to prevent accidental public exposure
+
+4. **archiveTrip uses 'completed' status**
+   - `trip_status` enum has four values: draft, planned, active, completed
+   - "Archive" maps to `completed` since schema has no separate archived status
+   - Future work item can add distinct archive semantics if needed
+
+5. **API directory established at src/lib/api/**
+   - Home for all Supabase data access functions
+   - Future modules (days, waypoints, gear) follow same pattern
+
+### Functions Implemented
+- createTrip(title, description, dateStart, dateEnd, region) → ApiResult<Trip>
+- getTrip(tripId) → ApiResult<Trip>
+- getUserTrips(filters) → ApiResult<Trip[]>
+- updateTrip(tripId, updates) → ApiResult<Trip>
+- deleteTrip(tripId) → ApiResult<void>
+- archiveTrip(tripId) → ApiResult<Trip>
+- duplicateTrip(tripId, newTitle) → ApiResult<Trip>
+
+### Files Created
+- `src/lib/api/trips.ts` (main CRUD module)
+
+---
+
+## Decision: Auth UI Layer — Pippin (Work Item #4)
+
+**Author:** Pippin (Frontend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Login page, auth guard, OAuth callback, Zustand store
+
+### Key Architectural Decisions
+
+1. **Auth state lives in Zustand, not React context**
+   - Auth state (user, session, isLoading) managed in Zustand store (`authStore.ts`)
+   - Consistent with project stack; simpler than Context + Provider
+   - Any component can access auth state without prop drilling
+
+2. **Auth listener initialized in App.tsx useEffect**
+   - `useAuthStore.initialize()` called once on mount with cleanup on unmount
+   - Ensures auth subscription active globally before any route renders
+   - Single point of initialization avoids duplicate listeners
+
+3. **AuthGuard is a wrapper component, not a route layout**
+   - `<AuthGuard>` wraps individual route elements rather than layout route
+   - More explicit — protected routes visible in route config
+   - Simpler to implement without React Router layout patterns
+
+4. **ESLint override for shadcn/ui components**
+   - Disabled `react-refresh/only-export-components` for `src/components/ui/**`
+   - shadcn components export helper utilities (e.g., buttonVariants) alongside components
+   - This is intentional and standard shadcn practice
+
+### Components Implemented
+- **LoginPage** — Email + Google OAuth with form validation
+- **AuthGuard** — Protected route wrapper with session check
+- **/auth/callback** — OAuth redirect handler for token exchange
+- **authStore** — Zustand store with session listener
+
+### Files Created
+- `src/pages/login.tsx` (LoginPage)
+- `src/components/auth-guard.tsx` (AuthGuard wrapper)
+- `src/pages/auth/callback.tsx` (/auth/callback route)
+- `src/stores/auth.ts` (Zustand store)
+- `src/hooks/use-auth.ts` (auth store hook)
