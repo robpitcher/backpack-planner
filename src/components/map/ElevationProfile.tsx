@@ -157,6 +157,7 @@ function computeStats(points: ElevationPoint[]): {
   return { totalGain, totalLoss, maxElev, minElev }
 }
 
+// TODO: fix duplicate `units` prop destructuring causing build error
 export default function ElevationProfile({
   routeGeoJSON,
   days,
