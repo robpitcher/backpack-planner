@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Compass, LogOut, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
@@ -108,14 +114,19 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/profile" aria-label="Profile">
-              <UserCircle className="h-5 w-5" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out">
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
+                <UserCircle className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
