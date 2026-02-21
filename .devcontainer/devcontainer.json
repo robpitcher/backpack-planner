@@ -3,7 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false },
-    "ghcr.io/devcontainers/features/git-lfs:1": {}
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
   },
   "hostRequirements": {
     "cpus": 4,
@@ -16,7 +20,7 @@
     "54322": { "label": "Supabase DB", "onAutoForward": "silent" },
     "54323": { "label": "Supabase Studio", "onAutoForward": "notify" }
   },
-  "postCreateCommand": "npm ci",
+  "postCreateCommand": "npm ci && (gh extension install github/gh-copilot || true)",
   "postStartCommand": "cp -n .env.local.example .env.local 2>/dev/null; echo 'Ready — run: npx supabase start && npm run dev'",
   "customizations": {
     "vscode": {
