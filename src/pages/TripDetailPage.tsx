@@ -316,26 +316,23 @@ function ReadOnlyMap({
   waypoints: Array<{ lat: number; lng: number; name: string }>
 }) {
   const containerRef = useState<HTMLDivElement | null>(null)
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
 
   useEffect(() => {
     const container = containerRef[0]
-    if (!container || !mapboxToken) return
+    if (!container) return
 
     // Dynamic import to avoid SSR issues
-    import('mapbox-gl').then(({ default: mapboxgl }) => {
-      mapboxgl.accessToken = mapboxToken
-
-      const map = new mapboxgl.Map({
+    import('maplibre-gl').then(({ default: maplibregl }) => {
+      const map = new maplibregl.Map({
         container,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
+        style: 'https://tiles.openfreemap.org/styles/liberty',
         center: [-111.09, 38.57],
         zoom: 6,
         interactive: true,
-        attributionControl: true,
+        attributionControl: {},
       })
 
-      map.addControl(new mapboxgl.NavigationControl(), 'top-left')
+      map.addControl(new maplibregl.NavigationControl(), 'top-left')
 
       map.on('load', () => {
         // Add route line
@@ -361,7 +358,7 @@ function ReadOnlyMap({
           const coords = geom.geometry!.coordinates
           const bounds = coords.reduce(
             (b, c) => b.extend(c as [number, number]),
-            new mapboxgl.LngLatBounds(
+            new maplibregl.LngLatBounds(
               coords[0] as [number, number],
               coords[0] as [number, number],
             ),
@@ -371,24 +368,16 @@ function ReadOnlyMap({
 
         // Add waypoint markers
         for (const wp of waypoints) {
-          new mapboxgl.Marker({ color: '#D97706' })
+          new maplibregl.Marker({ color: '#D97706' })
             .setLngLat([wp.lng, wp.lat])
-            .setPopup(new mapboxgl.Popup().setText(wp.name))
+            .setPopup(new maplibregl.Popup().setText(wp.name))
             .addTo(map)
         }
       })
 
       return () => map.remove()
     })
-  }, [containerRef, mapboxToken, routeGeoJSON, waypoints])
-
-  if (!mapboxToken) {
-    return (
-      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        Map unavailable
-      </div>
-    )
-  }
+  }, [containerRef, routeGeoJSON, waypoints])
 
   return (
     <div

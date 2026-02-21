@@ -99,7 +99,6 @@ This will:
 | ------------------------ | ------------------------------------ | ------------------------------------ |
 | `VITE_SUPABASE_URL`      | Supabase API URL                     | `http://127.0.0.1:54321`            |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key               | Standard local dev key (see .env.local.example) |
-| `VITE_MAPBOX_TOKEN`      | Mapbox GL JS access token            | Get from [Mapbox](https://account.mapbox.com/) |
 
 ## Seed Data
 

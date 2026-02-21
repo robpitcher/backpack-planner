@@ -82,9 +82,6 @@ Create a `.env.local` file (or use `.env.local.example` as a template):
 # Local defaults work for devcontainer; override for production
 VITE_SUPABASE_URL=http://127.0.0.1:54321
 VITE_SUPABASE_ANON_KEY=<local-key-from-supabase-start>
-
-# Required: Get your token from https://www.mapbox.com/account/tokens
-VITE_MAPBOX_TOKEN=<your-mapbox-token-here>
 ```
 
 ---
