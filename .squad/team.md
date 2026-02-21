@@ -15,5 +15,6 @@
 | Pippin | Frontend Dev | React, UI, interactive maps | ⚛️ Frontend |
 | Gimli | Backend Dev | APIs, database, services | 🔧 Backend |
 | Legolas | Tester | Tests, quality, edge cases | 🧪 Tester |
+| Gandalf | Product Manager | Feature design, requirements, thinking partner | 🎯 PM |
 | Scribe | Session Logger | Memory, decisions, session logs | 📋 Scribe |
 | Ralph | Work Monitor | Work queue, backlog, keep-alive | 🔄 Monitor |

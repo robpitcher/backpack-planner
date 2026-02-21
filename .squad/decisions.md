@@ -427,3 +427,38 @@ Work Item #23 — ThemeProvider & ThemeToggle Tests
 
 ### 7. ThemeToggle tests focus on UI interaction
 - 14 tests covering rendering, dropdown menu behavior, theme switching, accessibility, integration with ThemeProvider, error handling without provider.
+
+---
+
+## Theme Persistence & Contrast — Pippin (2026-02-22)
+
+Work Items #20 (Dark Mode) Refinement
+
+### 1. Use theme-aware CSS classes everywhere (never hardcode colors)
+- **Decision:** All components must use theme-aware CSS variable classes instead of hardcoded color classes.
+- **Rationale:** The `.dark` block in `src/index.css` overrides CSS custom properties (`--background`, `--foreground`, etc.) but hardcoded Tailwind colors like `bg-white` bypass this system entirely, making components always appear light regardless of theme.
+- **Implementation:**
+  - `bg-white` → `bg-background` or `bg-card`
+  - `bg-gray-50`/`bg-gray-100` → `bg-muted`
+  - `text-gray-900` → `text-foreground`
+  - `text-gray-500`/`text-gray-600` → `text-muted-foreground`
+  - `bg-gray-200` (dividers) → `bg-border`
+  - `hover:bg-gray-50`/`hover:bg-gray-100` → `hover:bg-accent`
+- **Exception:** Map overlay controls (DrawControls, MapStyleToggle, RouteStats) may keep `bg-white` since they float over the Mapbox map which doesn't change with theme.
+- **Also Fixed:** `src/components/ui/sonner.tsx` was importing `useTheme` from `next-themes` instead of our custom `@/lib/theme`. Fixed to use our provider so toasts match the active theme.
+
+### 2. Dark mode layered blue-gray contrast palette
+- **Decision:** Revised all dark mode CSS custom properties in `src/index.css` to use a layered blue-gray palette with visible contrast between layers.
+- **Rationale:** Pure achromatic dark mode was "almost too dark" — all surfaces appeared the same shade of black (oklch lightness 0.145–0.269 with 0 chroma), and borders used 10% white opacity which was nearly invisible. Added subtle blue-gray tint (oklch hue 285.75°, chroma 0.005–0.007) and spread lightness across 8 distinct visual levels.
+- **Lightness Hierarchy:**
+  - Background: 0.16 (darkest page background)
+  - Sidebar: 0.185
+  - Card: 0.21 (main content cards)
+  - Popover: 0.235 (floating panels)
+  - Muted: 0.24 (secondary text backgrounds)
+  - Secondary: 0.25
+  - Accent: 0.27 (hover/active states)
+  - Input border: 0.30 (form element borders)
+  - Border: 0.32 (lightest structural elements, dividers)
+- **Impact:** All dark mode surfaces now have visible contrast. Borders are clearly visible between sections. Hover/active states are distinguishable from resting states. Overall aesthetic remains dark (similar to GitHub Dark or Slack Dark). No code changes — all components inherit automatically. Light mode unchanged.
+- **Foreground colors unchanged:** All text colors, primary, destructive, and chart colors were intentionally left as-is.
