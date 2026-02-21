@@ -1,0 +1,36 @@
+{
+  "agents": [
+    {
+      "persistent_name": "Strider",
+      "role": "Lead",
+      "universe": "lord-of-the-rings",
+      "created_at": "2026-02-21T13:20:04Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    {
+      "persistent_name": "Pippin",
+      "role": "Frontend Dev",
+      "universe": "lord-of-the-rings",
+      "created_at": "2026-02-21T13:20:04Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    {
+      "persistent_name": "Gimli",
+      "role": "Backend Dev",
+      "universe": "lord-of-the-rings",
+      "created_at": "2026-02-21T13:20:04Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    {
+      "persistent_name": "Legolas",
+      "role": "Tester",
+      "universe": "lord-of-the-rings",
+      "created_at": "2026-02-21T13:20:04Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  ]
+}

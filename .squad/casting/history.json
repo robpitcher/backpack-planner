@@ -1,0 +1,15 @@
+{
+  "assignments": [
+    {
+      "assignment_id": "backpack-planner-001",
+      "universe": "lord-of-the-rings",
+      "created_at": "2026-02-21T13:20:04Z",
+      "agents": [
+        { "name": "Strider", "role": "Lead" },
+        { "name": "Pippin", "role": "Frontend Dev" },
+        { "name": "Gimli", "role": "Backend Dev" },
+        { "name": "Legolas", "role": "Tester" }
+      ]
+    }
+  ]
+}
