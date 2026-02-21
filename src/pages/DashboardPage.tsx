@@ -131,19 +131,25 @@ export default function DashboardPage() {
             sidebarOpen ? 'flex' : 'hidden'
           } w-full shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground sm:w-[280px] lg:flex lg:w-80`}
         >
-          {/* Status filters — sticky top */}
-          <div className="flex shrink-0 flex-wrap gap-1 border-b p-2">
-            {FILTER_OPTIONS.map((opt) => (
-              <Button
-                key={opt.value}
-                variant={statusFilter.has(opt.value) ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 px-2.5 text-xs"
-                onClick={() => setFilter(opt.value)}
-              >
-                {opt.label}
-              </Button>
-            ))}
+          {/* Sidebar header */}
+          <div className="shrink-0 border-b px-3 pb-2 pt-3">
+            <h2 className="text-sm font-semibold tracking-wide">Trips</h2>
+            <p className="mb-1.5 mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Filters</p>
+            <div className="flex flex-wrap gap-1">
+              {FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                    statusFilter.has(opt.value)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setFilter(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Trip list — scrollable */}
