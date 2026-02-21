@@ -155,3 +155,19 @@
   - GPX import persists both route (via `updateTrip`) and waypoints (via `createWaypoint`) to DB in one flow
   - GPX export generates GPX 1.1 with metadata, wpt elements, and trk/trkseg. Filename format: `{safeName}_{date}.gpx`
   - Share toggle uses store's `updateTrip` for optimistic UI — toggles `is_public` field on trips table
+
+### Trip Duplication (Deep Clone) + Responsive Layout — Items 16, 18 (Phase 2)
+- **Files created:**
+  - `src/lib/api/duplicate.ts` — Deep-clone API: `duplicateTrip(tripId, newTitle)` fetches source trip + all related data (days, waypoints, gear), creates new trip with fresh UUIDs, remaps day→waypoint FKs, resets status to draft and is_public to false, resets is_packed on gear
+  - `src/components/DuplicateTripDialog.tsx` — Dialog with title input (default: "{name} (Copy)"), calls deep-clone API, navigates to new trip on success
+- **Files updated:**
+  - `src/components/TripCard.tsx` — Added "Duplicate" option to trip card dropdown menu (Copy icon), wired to DuplicateTripDialog
+  - `src/lib/api/trips.ts` — Removed old shallow `duplicateTrip` stub (replaced by deep-clone in duplicate.ts)
+  - `src/pages/TripPlannerPage.tsx` — Responsive layout polish: sidebar toggle button (PanelLeft icon) visible on < lg viewports, sidebar collapsible on narrow screens, full-width sidebar on mobile, min-height on map container, responsive header spacing, hidden trip ID on small screens
+- **Architecture decisions:**
+  - Deep-clone uses sequential Supabase inserts (not a DB transaction) — acceptable for MVP since partial clones are harmless drafts
+  - Day ID mapping (old→new) is built by matching day_number order after bulk insert, then used to remap waypoint day_id FKs
+  - Gear items have `is_packed` reset to false in cloned trip — packing status shouldn't carry over
+  - Start/end waypoint refs on days are set to null in clone — would need waypoint ID remapping which adds complexity for little value in MVP
+  - Sidebar defaults to open on lg+ (1024px), toggle-able on smaller viewports via `lg:flex` + state-controlled visibility
+  - DashboardPage grid already used correct responsive classes (`sm:grid-cols-2 lg:grid-cols-3`) — no changes needed

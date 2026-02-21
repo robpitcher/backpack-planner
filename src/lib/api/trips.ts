@@ -109,23 +109,5 @@ export async function archiveTrip(
   return updateTrip(tripId, { status: 'completed' })
 }
 
-// ── Duplicate (stub — full deep-clone in Item #31) ───────────
-
-export async function duplicateTrip(
-  tripId: string,
-): Promise<ApiResult<Trip>> {
-  const { data: source, error: fetchError } = await getTrip(tripId)
-
-  if (fetchError || !source) {
-    return { data: null, error: fetchError }
-  }
-
-  return createTrip({
-    title: `${source.title} (copy)`,
-    description: source.description,
-    start_date: source.start_date,
-    end_date: source.end_date,
-    region: source.region,
-    is_public: false,
-  })
-}
+// ── Duplicate ────────────────────────────────────────────────
+// Deep-clone moved to src/lib/api/duplicate.ts (Item #31)
