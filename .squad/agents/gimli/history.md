@@ -76,3 +76,18 @@
 **Status:** ✅ ALL FOUNDATION ITEMS DONE
 
 **Summary:** Phase 1 foundation complete — all 10 items delivered. Built: Supabase schema + RLS, email+Google auth, dashboard with trip cards, Trip CRUD (create/rename/delete/archive), unit system, shared types. All CI checks passing. Ready for Phase 2: map integration, route drawing, waypoints, itinerary panel. Squad synchronized.
+
+### Devcontainer & Local Dev Setup (2026-02-21)
+- **Files created:**
+  - `.devcontainer/devcontainer.json` — Node 20 image, Docker-in-Docker + Supabase CLI features, port forwarding (5173, 54321-54323), ESLint/Prettier/Tailwind/Supabase VS Code extensions
+  - `supabase/config.toml` — Local Supabase config: auth redirect to localhost:5173, email signup enabled, confirmations disabled for dev speed, seed.sql auto-applied
+  - `supabase/seed.sql` — Test user (hiker@example.com / testpassword123), 3 trips (planned/draft/completed), 6 waypoints, 4 gear items
+  - `.env.local.example` — Local Supabase URL + standard local anon key + Mapbox placeholder
+  - `DEVELOPING.md` — Quick start (devcontainer + manual), common commands, DB reset instructions, seed data docs
+- **Architecture decisions:**
+  - No docker-compose needed — Supabase CLI manages its own Docker stack via `supabase start`
+  - Used devcontainer feature `ghcr.io/supabase/devcontainer-features/supabase-cli` for Supabase CLI installation
+  - Docker-in-Docker feature required because `supabase start` runs Docker containers inside the devcontainer
+  - Auth email confirmations disabled in local config for frictionless dev testing
+  - Supabase Studio on port 54323 (Supabase CLI default), API on 54321, DB on 54322
+  - Seed data uses deterministic UUIDs for easy reference in tests
