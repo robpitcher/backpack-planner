@@ -1,6 +1,6 @@
 # Decisions — Backpack Planner / TrailForge MVP
 
-**Last Updated:** 2026-02-21T14:01Z
+**Last Updated:** 2026-02-21T14:15Z
 
 ---
 
@@ -120,3 +120,179 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 - **Month 3:** 15 items — gear, sharing, P1 polish, QA
 - **Gimli and Pippin can work in parallel** for most of the timeline — backend APIs land slightly ahead of frontend consumption
 - **Legolas** should begin writing tests in Month 1 (unit conversion, auth flows) and ramp up for integration/E2E in Month 3
+
+---
+
+## Decision: Database Schema & RLS — Gimli (Work Item #1)
+
+**Author:** Gimli (Backend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Supabase schema migrations with RLS policies
+
+### Key Architectural Decisions
+
+1. **Users table extends auth.users via FK**
+   - `public.users` uses `id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE`
+   - Supabase Auth owns user lifecycle; deleting auth user cascades to profile and downstream data
+
+2. **route_geojson stored as JSONB on trips**
+   - Per Strider's architectural gap analysis, added `route_geojson JSONB` to trips table
+   - Stores full GeoJSON FeatureCollection/LineString for single route per trip (MVP constraint)
+   - No PostGIS extension needed for MVP (spatial queries deferred)
+
+3. **Public trip sharing via RLS (not Edge Function)**
+   - RLS policies allow unauthenticated SELECT on trips, days, waypoints, and conditions where `is_public = true`
+   - Share view uses standard Supabase anon key — no service-role Edge Function needed for basic reads
+   - Gear lists and recommendations remain owner-only (not visible in share view)
+
+4. **Gear items scoped to both user_id and trip_id**
+   - Gear items have FKs to both users and trips; RLS checks `auth.uid() = user_id` directly
+   - Supports future cross-trip gear management (e.g., "my gear closet") while keeping items trip-scoped for MVP
+
+5. **Day-Waypoint relationship uses SET NULL**
+   - Days reference start/end waypoints with ON DELETE SET NULL
+   - Waypoints can exist unassigned to any day during initial trip planning before itinerary organized
+
+### Files Created
+- `supabase/migrations/20260221090001_create_enums.sql`
+- `supabase/migrations/20260221090002_create_tables.sql`
+- `supabase/migrations/20260221090003_create_rls_policies.sql`
+
+---
+
+## Decision: Project Scaffold — Pippin (Work Item #2)
+
+**Author:** Pippin (Frontend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Vite + React + TypeScript + Tailwind + shadcn/ui + Zustand + Router
+
+### Key Architectural Decisions
+
+1. **React 19 instead of React 18**
+   - Kept React 19 (Vite's current default) — current stable release, backwards-compatible, avoids future migration
+   - All PRD features work identically on both versions
+
+2. **Tailwind CSS v4**
+   - Using Tailwind CSS v4 with Vite plugin (`@tailwindcss/vite`), not v3 with PostCSS
+   - Current stable release; simplifies config (no tailwind.config.js needed); shadcn/ui supports v4 natively
+
+3. **shadcn/ui new-york style**
+   - Initialized with "new-york" style variant (default); clean, modern aesthetic fits TrailForge brand
+   - Can be themed later via CSS variables
+
+4. **Path alias @/\***
+   - Set up `@/*` → `./src/*` path alias across Vite, TypeScript, and shadcn configs
+   - Clean imports (`@/lib/supabase` vs `../../../lib/supabase`); standard convention for Vite + shadcn projects
+
+---
+
+## Decision: Auth Setup — Gimli (Work Item #3)
+
+**Author:** Gimli (Backend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Supabase Auth configuration and utilities
+
+### Key Architectural Decisions
+
+1. **Google OAuth callback URL pattern**
+   - `${window.location.origin}/auth/callback` used as OAuth redirect target
+   - Standard SPA pattern; callback route in app so frontend can handle token exchange and redirect to dashboard
+   - Must be registered in Supabase Dashboard → Auth → URL Configuration → Redirect URLs
+
+2. **AuthResult<T> wrapper type**
+   - All auth functions return `{ data: T | null, error: AuthError | null }` via `AuthResult<T>`
+   - Mirrors Supabase SDK pattern; normalizes shape across sign-up (may return null session if email confirmation required), sign-in, and profile fetch
+   - Frontend always destructures `{ data, error }` — no surprises
+
+3. **getUserProfile queries public.users separately from auth**
+   - `getUserProfile()` calls `supabase.auth.getUser()` to get auth user id, then queries `public.users` for profile row
+   - Supabase Auth metadata (auth.users) and app profile table (public.users) are separate concerns
+   - Profile table has app-specific fields (preferred_units, skill_level) that don't belong in auth metadata
+   - Requires row in `public.users` for every auth user (post-signup hook future work item)
+
+4. **No auth Zustand store in this item**
+   - Auth utilities are pure async functions, not a Zustand store
+   - Auth state store is frontend concern (Pippin's domain); these utilities are API layer that store will call
+
+### Functions Exported
+- signUpWithEmail(email, password) → AuthResult<AuthSession>
+- signInWithEmail(email, password) → AuthResult<AuthSession>
+- signInWithGoogle() → redirects to Google OAuth
+- signOut() → AuthResult<void>
+- resetPassword(email) → AuthResult<void>
+- updatePassword(newPassword) → AuthResult<void>
+- getUserProfile() → AuthResult<User>
+
+### Files Created
+- `src/lib/auth.ts` (74 lines)
+- `src/types/auth.ts` (28 lines)
+
+---
+
+## Decision: Types & Units Module Design — Pippin (Work Items #6, #7)
+
+**Author:** Pippin (Frontend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Shared TypeScript interfaces and unit conversion utility
+
+### Work Item #6: Unit Conversion Utility
+
+#### Key Architectural Decision
+- **Formatter functions accept imperial values only**
+  - Formatters (formatDistance, formatElevation, formatWeight, formatTemperature) always receive imperial values (DB canonical unit) and convert internally based on UnitSystem
+  - Matches "store imperial, convert on display" architecture from PRD §6
+  - Avoids ambiguity about input units; components never need to know conversion math
+
+#### Functions Exported
+- **Distance:** miToKm, kmToMi
+- **Elevation:** ftToM, mToFt
+- **Weight:** ozToG, gToOz
+- **Temperature:** fahrenheitToCelsius, celsiusToFahrenheit
+- **Formatters:** formatDistance, formatElevation, formatWeight, formatTemperature
+
+#### Test Coverage
+- 39 Vitest unit tests covering:
+  - Round-trip conversions (mi↔km, ft↔m, oz↔g, °F↔°C) with tolerance (0.0001)
+  - Formatter output (correct unit symbols, decimal places, thousands separator)
+  - Edge cases (zero, negative where applicable, very large numbers)
+  - All tests passing ✅
+
+### Work Item #7: TypeScript Shared Types
+
+#### Key Architectural Decisions
+- **Timestamps as ISO 8601 strings**
+  - All `created_at`, `fetched_at`, `expires_at`, `date` fields typed as `string` (not `Date`)
+  - Matches Supabase PostgREST JSON serialization; avoids timezone bugs and unnecessary serialization/deserialization
+
+- **JSONB fields as Record<string, unknown>**
+  - `route_geojson` on Trip and `data` on Conditions typed as `Record<string, unknown> | null`
+  - Keeps types loose for MVP; tighten with GeoJSON and weather-specific types when those features built (Items #11, #28)
+
+- **Vitest for unit testing**
+  - Installed Vitest as test runner
+  - Vitest shares Vite's config and transform pipeline, giving near-instant test startup
+  - Compatible with existing Vite + TypeScript setup with zero additional config
+
+#### Interfaces Exported
+1. **User** — id, email, created_at, preferred_units, skill_level
+2. **Trip** — id, title, status, date_start, date_end, route_geojson, is_public, created_at, user_id
+3. **Day** — id, trip_id, date, distance_miles, elevation_gain_ft, start_waypoint_id, end_waypoint_id
+4. **Waypoint** — id, day_id, name, lat, lng, elevation_ft, notes, order, created_at
+5. **GearItem** — id, user_id, trip_id, name, weight_oz, category
+6. **Conditions** — id, trip_id, weather_forecast, sunrise, sunset, data (JSONB)
+
+#### Enums Exported
+1. **UnitSystem** — IMPERIAL, METRIC
+2. **SkillLevel** — BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+3. **TripStatus** — DRAFT, PLANNED, ACTIVE, COMPLETED
+4. **GearCategory** — BACKPACK, TENT, SLEEPING_BAG, CLOTHING, FOOD, WATER, TOOLS, OTHER
+5. **WeatherCondition** — CLEAR, PARTLY_CLOUDY, CLOUDY, RAINY, SNOWY
+
+### Files Created
+- `src/utils/units.ts` (112 lines, 8 functions + 4 formatters)
+- `src/utils/__tests__/units.test.ts` (182 lines, 39 tests)
+- `src/types/index.ts` (108 lines, 6 interfaces + 5 enums)

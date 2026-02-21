@@ -43,3 +43,29 @@
   - Gear and recommendations are owner-only (no public read)
 - **Indexes:** user_id on all owner-scoped tables, trip_id on all child tables, email on users, status on trips
 - **Units:** All numeric values stored in imperial (miles, feet, oz) per PRD Appendix
+
+### Supabase Auth Setup — Work Item #3 (2026-02-21)
+- **Files created:** `src/types/auth.ts` (type definitions), `src/lib/auth.ts` (auth utilities)
+- **Exports:** signUp, signIn, signInWithGoogle, signOut, getSession, onAuthStateChange, getUserProfile
+- **Types exported:** UserProfile (mirrors public.users row), AuthResult<T> wrapper, re-exported Session/User/AuthError from Supabase
+- **Architecture decisions:**
+  - Auth utilities import from `@/lib/supabase` (Pippin's client from Item #2)
+  - Google OAuth redirect set to `${window.location.origin}/auth/callback` — Pippin will need a route for this
+  - `getUserProfile()` uses `supabase.auth.getUser()` first, then queries `public.users` — keeps auth and profile concerns separated
+  - `onAuthStateChange` returns the raw `Subscription` so the caller can unsubscribe (e.g., in a React useEffect cleanup)
+  - `AuthResult<T>` wrapper provides a consistent `{ data, error }` shape across all auth functions
+  - No Zustand store created here — that's Pippin's domain (frontend state management)
+
+### Trip CRUD API — Work Item #8 (2026-02-21)
+- **File created:** `src/lib/api/trips.ts`
+- **Exports:** createTrip, getTrip, getUserTrips, updateTrip, deleteTrip, archiveTrip, duplicateTrip
+- **Types exported:** ApiResult<T> (result wrapper), CreateTripInput, UpdateTripInput
+- **Architecture decisions:**
+  - Created `ApiResult<T>` wrapper separate from `AuthResult<T>` — uses `PostgrestError` not `AuthError`
+  - `createTrip` does NOT accept `user_id` — RLS infers it from the authenticated session (Supabase auto-sets via `auth.uid()`)
+  - `getUserTrips` orders by `created_at DESC` for dashboard display (newest first)
+  - `archiveTrip` delegates to `updateTrip` with `status: 'completed'` — matches the `trip_status` enum from schema
+  - `duplicateTrip` is a shallow stub: copies trip-level fields only, resets to draft, sets `is_public: false`. Deep-clone (days, waypoints, gear) deferred to Item #31
+  - `UpdateTripInput` uses `Partial<Omit<Trip, 'id' | 'user_id' | 'created_at'>>` — prevents mutation of immutable fields
+  - All functions respect RLS — no service-role key, no `.auth.admin` calls
+- **Key file paths:** `src/lib/api/trips.ts`, types from `src/types/index.ts`, client from `src/lib/supabase.ts`

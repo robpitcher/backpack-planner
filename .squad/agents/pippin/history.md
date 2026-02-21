@@ -41,3 +41,24 @@
   - Phase 2: Mapbox integration (11), Route drawing (12), Waypoint placement (14), Waypoint detail panel (15), Itinerary panel (17), Responsive layout (18)
   - Phase 3: Gear list UI (20), Trip share view frontend (22), Elevation profile (23), GPX import UI (25), Conditions UI (28), Gear templates UI (30), QA polish (33)
 - **Risk: Mapbox key** must be env var only (VITE_MAPBOX_TOKEN); **Risk: Drag-and-drop library** choice (@dnd-kit/core vs react-beautiful-dnd) needed before Item 17
+
+### WI#6 & WI#7 — Unit Conversion Utility & Shared Types (2026-02-21)
+- **Unit conversion module:** `src/utils/units.ts` — pure functions for distance (mi↔km), elevation (ft↔m), weight (oz↔g), temperature (°F↔°C) plus formatter functions that take imperial values + UnitSystem and return display strings.
+- **Shared types:** `src/types/index.ts` — all entity interfaces (User, Trip, Day, Waypoint, GearItem, Conditions) and enum types (UnitSystem, TripStatus, WaypointType, GearCategory, ConditionSource) matching the PRD data model.
+- **Vitest installed:** Added as devDependency; `npm run test` and `npm run test:watch` scripts added. 39 unit tests covering all conversions + edge cases (zero, negative, large values, round-trip accuracy) + all formatters.
+- **Design decisions:**
+  - All DB values are stored in imperial; conversion is display-only (per PRD §6).
+  - Formatter functions accept imperial values and a UnitSystem, returning formatted strings with unit labels.
+  - Elevation/formatElevation uses Math.round (whole numbers) since fractional feet/meters are not meaningful for hiking.
+  - Types use `string` for timestamps (ISO 8601 from Supabase) and `Record<string, unknown>` for JSONB fields.
+  - Nullable fields match the DB schema (e.g., day_id on Waypoint is nullable for unassigned waypoints per Decision #5).
+
+### WI#4 — Auth UI (Login, AuthGuard, OAuth Callback)
+- **Auth store:** `src/stores/authStore.ts` — Zustand store with `user`, `session`, `isLoading`, `setUser`, `setSession`, `logout`, `initialize` actions. `initialize()` fetches session and subscribes to `onAuthStateChange`; returns cleanup function.
+- **Login page:** `src/pages/LoginPage.tsx` — full login/signup form using shadcn Card, Input, Button, Label. Google OAuth button, email/password form with toggle between sign-in and sign-up modes. Shows confirmation message after signup. Redirects to /dashboard on success.
+- **Auth guard:** `src/components/AuthGuard.tsx` — wrapper component checking `session` from auth store. Shows spinner while loading, redirects to /login if unauthenticated.
+- **OAuth callback:** `src/pages/AuthCallbackPage.tsx` — handles `/auth/callback` route, checks session via Supabase client, redirects to /dashboard or /login.
+- **App.tsx:** Auth listener initialized via `useEffect` on mount. Protected routes (/dashboard, /trip/:tripId/plan, /trip/:tripId) wrapped with `<AuthGuard>`. `/auth/callback` route added.
+- **shadcn components installed:** button, input, card, label (in `src/components/ui/`).
+- **ESLint config:** Added override to disable `react-refresh/only-export-components` for `src/components/ui/**` since shadcn components export both components and variant helpers.
+- **Auth types:** Uses `Session`, `User`, `AuthError` from `src/types/auth.ts` (Gimli's types). Auth functions from `src/lib/auth.ts`.

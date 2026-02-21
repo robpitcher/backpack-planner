@@ -20,8 +20,9 @@
 - **Rob prefers:** Actionable specificity — work items should be pick-up-and-go, not vague.
 - **Risks flagged:** Route geometry storage (resolved), Mapbox key management, GPX edge cases, elevation data source, drag-and-drop library choice.
 
-### Phase 1 Kickoff (2026-02-21)
-- **Item #1 (Schema):** Completed by Gimli. 7 tables in supabase/migrations/ with cascading FKs, indexes, RLS policies. route_geojson JSONB on Trip; public sharing via is_public flag.
-- **Item #2 (Scaffold):** Completed by Pippin. Vite + React 19 + TypeScript strict + Tailwind v4 + shadcn/ui + Zustand + React Router (5 routes) + Supabase client. Boots on localhost:5173.
-- **React 19 + Tailwind v4 chosen** as tech stack (finalized in decisions.md).
-- **Items #3, #6, #7 now unblocked** for next wave.
+### Phase 1 Batch 2 Complete (2026-02-21)
+- **Item #3 (Auth):** Completed by Gimli. Email + Google OAuth; src/lib/auth.ts (6 functions + getUserProfile); AuthResult<T> wrapper.
+- **Item #6 (Unit Conversion):** Completed by Pippin. src/utils/units.ts (8 functions, 4 formatters); 39 Vitest tests passing.
+- **Item #7 (Shared Types):** Completed by Pippin. src/types/index.ts (6 interfaces, 5 enums); ISO 8601 timestamps, JSONB as Record<string, unknown>.
+- **5 of 10 Phase 1 items done (50%).** Items #3, #6, #7 done. Auth at src/lib/auth.ts, types at src/types/index.ts, units at src/utils/units.ts.
+- **Items #4, #5, #8 now unblocked** for next wave: Auth UI, User profile, Trip CRUD API.

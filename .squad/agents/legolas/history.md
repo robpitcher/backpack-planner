@@ -24,8 +24,12 @@
 - **Risk: Unit conversion correctness** — centralized utility must have thorough unit tests (Item 6 support)
 - **Risk: GPX edge cases** — write edge-case tests with malformed GPX files for Item 24
 
-### Phase 1 Foundation Complete (2026-02-21)
-- **Project scaffold and schema ready** for integration.
-- **Item #2 (Scaffold):** Vite + React 19 + Tailwind v4 boots on localhost:5173.
-- **Item #1 (Schema):** 7 tables in supabase/migrations/ with RLS, route_geojson JSONB, cascading FKs.
-- **Unit conversion utility (Item #6)** coming next — plan to write property-based tests for round-trip conversions (mi↔km, ft↔m, oz↔g, °F↔°C).
+### Phase 1 Batch 2 Testing Complete (2026-02-21)
+- **Unit conversion tests (Item #6):** Property-based tests complete. 39 Vitest tests in src/utils/__tests__/units.test.ts all passing ✅
+  - Round-trip conversions (mi↔km, ft↔m, oz↔g, °F↔°C) with 0.0001 tolerance
+  - Formatter output validation (unit symbols, decimal places, thousands separator)
+  - Edge cases (zero, negative, very large numbers)
+- **Auth helpers (Item #3):** 6 functions + getUserProfile exported from src/lib/auth.ts. Manual verification complete; integration tests deferred.
+- **Unit conversion tests in src/utils/__tests__/units.test.ts (39 tests). Auth helpers at src/lib/auth.ts ready for integration testing.**
+- **Risk (Unit Conversion Correctness) resolved ✅** — centralized utility thoroughly tested via property-based approach.
+- **Next Phase 1 testing:** Auth flow tests (Items #4–5) once frontend consumes auth layer; integration suite (Item #9).
