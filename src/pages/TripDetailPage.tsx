@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { fetchPublicTrip, type PublicTripData } from '@/lib/api/share'
 import { formatDistance, formatWeight, formatElevation } from '@/utils/units'
+import ElevationProfile from '@/components/map/ElevationProfile'
 
 export default function TripDetailPage() {
   const { tripId } = useParams()
@@ -142,6 +143,11 @@ export default function TripDetailPage() {
             <div className="overflow-hidden rounded-lg border bg-gray-100">
               <ReadOnlyMap routeGeoJSON={trip.route_geojson} waypoints={waypoints} />
             </div>
+            <ElevationProfile
+              routeGeoJSON={trip.route_geojson}
+              days={days}
+              units="imperial"
+            />
           </section>
         )}
 

@@ -101,3 +101,20 @@ export interface Conditions {
   fetched_at: string;
   expires_at: string;
 }
+
+// ── Gear Templates ─────────────────────────────────────────
+
+export interface GearTemplateItem {
+  name: string;
+  category: GearCategory;
+  weight_oz: number;
+  quantity: number;
+}
+
+export interface GearTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  items: GearTemplateItem[];
+  created_at: string;
+}
