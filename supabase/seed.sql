@@ -7,7 +7,11 @@
 -- ============================================================
 INSERT INTO auth.users (
   id, instance_id, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, aud, role, created_at, updated_at
+  raw_app_meta_data, raw_user_meta_data, aud, role, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new,
+  email_change, email_change_token_current, phone, phone_change,
+  phone_change_token, reauthentication_token, email_change_confirm_status,
+  is_sso_user, is_anonymous
 ) VALUES (
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   '00000000-0000-0000-0000-000000000000',
@@ -19,7 +23,11 @@ INSERT INTO auth.users (
   'authenticated',
   'authenticated',
   now(),
-  now()
+  now(),
+  '', '', '',
+  '', '', '', '',
+  '', '', 0,
+  false, false
 );
 
 INSERT INTO auth.identities (

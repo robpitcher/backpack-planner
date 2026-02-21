@@ -1,9 +1,6 @@
 # TrailForge — Supabase local development configuration
 # Docs: https://supabase.com/docs/guides/local-development
 
-[project]
-id = "trailforge-local"
-
 [api]
 enabled = true
 port = 54321
