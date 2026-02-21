@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Calendar, Ruler, MoreVertical, Pencil, Archive, Trash2 } from 'lucide-react'
+import { MapPin, Calendar, Ruler, MoreVertical, Pencil, Archive, Copy, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import RenameTripDialog from '@/components/RenameTripDialog'
 import DeleteTripDialog from '@/components/DeleteTripDialog'
+import DuplicateTripDialog from '@/components/DuplicateTripDialog'
 import { useTripStore } from '@/stores/tripStore'
 import type { Trip, TripStatus, UnitSystem } from '@/types'
 import { formatDistance } from '@/utils/units'
@@ -54,6 +55,7 @@ export default function TripCard({ trip, units }: TripCardProps) {
 
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [duplicateOpen, setDuplicateOpen] = useState(false)
 
   async function handleArchive() {
     const ok = await archiveTripAction(trip.id)
@@ -98,6 +100,10 @@ export default function TripCard({ trip, units }: TripCardProps) {
                   <DropdownMenuItem onClick={() => setRenameOpen(true)}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDuplicateOpen(true)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Duplicate
                   </DropdownMenuItem>
                   {trip.status !== 'completed' && (
                     <DropdownMenuItem onClick={handleArchive}>
@@ -154,6 +160,12 @@ export default function TripCard({ trip, units }: TripCardProps) {
         tripTitle={trip.title}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
+      />
+      <DuplicateTripDialog
+        tripId={trip.id}
+        tripTitle={trip.title}
+        open={duplicateOpen}
+        onOpenChange={setDuplicateOpen}
       />
     </>
   )
