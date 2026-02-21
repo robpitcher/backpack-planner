@@ -8,9 +8,9 @@
   "forwardPorts": [5173, 54321, 54322, 54323],
   "portsAttributes": {
     "5173": { "label": "Vite Dev Server", "onAutoForward": "notify" },
-    "54321": { "label": "Supabase Studio", "onAutoForward": "notify" },
-    "54322": { "label": "Supabase API", "onAutoForward": "silent" },
-    "54323": { "label": "Supabase DB", "onAutoForward": "silent" }
+    "54321": { "label": "Supabase API", "onAutoForward": "notify" },
+    "54322": { "label": "Supabase DB", "onAutoForward": "silent" },
+    "54323": { "label": "Supabase Studio", "onAutoForward": "notify" }
   },
   "postCreateCommand": "npm install",
   "postStartCommand": "cp -n .env.local.example .env.local 2>/dev/null; echo 'Ready — run: supabase start && npm run dev'",
@@ -22,10 +22,7 @@
         "bradlc.vscode-tailwindcss",
         "supabase.supabase-js-vscode"
       ],
-      "settings": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
-      }
+      "settings": {}
     }
   }
 }
