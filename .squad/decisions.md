@@ -45,3 +45,30 @@ Work Item #2: Project Scaffold
 ### 4. Path alias @/*
 - **Decision:** Set up `@/*` → `./src/*` path alias across Vite, TypeScript, and shadcn configs.
 - **Rationale:** Clean imports (`@/lib/supabase` vs `../../../lib/supabase`). Standard convention for Vite + shadcn projects.
+
+---
+
+## Profile & Dashboard Decisions — Pippin (2026-02-21)
+
+Work Items #5 & #9: User profile settings, Dashboard UI
+
+### 1. Sonner for toast notifications (not shadcn Toast)
+- **Decision:** Used `sonner` (via shadcn's sonner wrapper) for success/error toast feedback instead of the lower-level shadcn Toast component.
+- **Rationale:** Sonner has a simpler API (`toast.success()` / `toast.error()`), auto-dismisses, and is the recommended approach in shadcn/ui v2+. No need for a ToastProvider or imperative hook.
+
+### 2. preferredUnits as top-level auth store field
+- **Decision:** Added `preferredUnits: UnitSystem` as a top-level field in the auth store alongside the existing `userProfile` object.
+- **Rationale:** Components that only need the unit preference can subscribe to `preferredUnits` without depending on the full profile object. Keeps selectors simple: `useAuthStore(s => s.preferredUnits)`.
+
+### 3. Auth store extended with UserProfile
+- **Decision:** Added `userProfile: UserProfile | null` to the auth store, fetched alongside session initialization.
+- **Rationale:** `preferred_units` lives on `public.users`, not the Supabase Auth `User` object. The auth store is the natural home for user profile data since it already manages auth lifecycle. Fetching on auth init ensures units are available before any dashboard render.
+- **Impact:** Minimal — added one field and one fetch call. No breaking changes to existing auth store consumers.
+
+### 4. Status filter uses buttons, not shadcn Tabs
+- **Decision:** Used a row of `Button` components with `variant` toggling for status filtering instead of shadcn `Tabs`.
+- **Rationale:** Buttons are more flexible for mobile (horizontal scroll), visually compact, and don't imply tab panel content switching. The filter just controls which cards appear in the same grid.
+
+### 5. Map thumbnail is a placeholder
+- **Decision:** Trip cards show a gray `MapPin` icon box instead of a real map thumbnail.
+- **Rationale:** Per spec — real map thumbnails depend on Mapbox integration (Phase 2). Placeholder is clean and clearly intentional.

@@ -62,3 +62,22 @@
 - **shadcn components installed:** button, input, card, label (in `src/components/ui/`).
 - **ESLint config:** Added override to disable `react-refresh/only-export-components` for `src/components/ui/**` since shadcn components export both components and variant helpers.
 - **Auth types:** Uses `Session`, `User`, `AuthError` from `src/types/auth.ts` (Gimli's types). Auth functions from `src/lib/auth.ts`.
+
+### WI#9 — Dashboard UI (Trip Card Grid)
+- **Trip store:** `src/stores/tripStore.ts` — Zustand store with `trips`, `isLoading`, `statusFilter`, `fetchTrips(userId)`, `setFilter()`. Exports `useFilteredTrips()` selector hook that returns trips filtered by current status filter.
+- **Auth store extended:** Added `userProfile: UserProfile | null` to `src/stores/authStore.ts`. Fetches user profile via `getUserProfile()` on session init and auth state changes — provides `preferred_units` for unit-aware display.
+- **AppHeader:** `src/components/AppHeader.tsx` — shared header with "TrailForge" brand, user email, profile link (UserCircle icon), sign out button (LogOut icon). Used on dashboard (will be reused on trip planner pages).
+- **TripCard:** `src/components/TripCard.tsx` — reusable card using shadcn Card + Badge. Shows map placeholder (gray box with MapPin icon), title, color-coded status badge (draft=gray, planned=blue, active=green, completed=purple), date range, day count. Click navigates to `/trip/:tripId/plan`. Accepts `units` prop for unit-aware formatting via `formatDistance()`.
+- **DashboardPage:** `src/pages/DashboardPage.tsx` — full dashboard with AppHeader, "My Trips" heading, "Create Trip" button, status filter buttons (All/Draft/Planned/Active/Completed), responsive card grid (1 col mobile, 2 col tablet, 3 col desktop), loading skeleton (6 placeholder cards), empty state with Compass icon + CTA button.
+- **shadcn components installed:** badge, skeleton, tabs (tabs not used yet but available for future).
+- **Responsive grid:** Uses Tailwind `grid gap-4 sm:grid-cols-2 lg:grid-cols-3` for the 1/2/3 column breakpoints.
+- **Date formatting:** Uses `toLocaleDateString('en-US', { month: 'short', day: 'numeric' })` with timezone-safe `T00:00:00` suffix to avoid off-by-one date display.
+
+### WI#5 — User Profile Settings Page
+- **Profile API helper:** `src/lib/api/profile.ts` — `getUserProfile(userId)` and `updateUserProfile(userId, data)` functions using Supabase client. Follows same `ApiResult<T>` pattern as trips API.
+- **Profile page:** `src/pages/ProfilePage.tsx` — settings form with display_name (text input), avatar_url (URL input), skill_level (select dropdown: beginner/intermediate/advanced), unit preference toggle (Switch: imperial ↔ metric). Save button persists to Supabase `users` table. Uses sonner toast for success/error feedback.
+- **Auth store extended:** Added `preferredUnits: UnitSystem` and `setPreferredUnits()` to `src/stores/authStore.ts`. Initialized from profile on login and auth state changes. Available app-wide for all components to read current unit preference.
+- **Route added:** `/profile` route in App.tsx, protected by AuthGuard.
+- **Dashboard header:** Added header bar to DashboardPage with TrailForge branding, profile settings link, user email display, and sign-out button.
+- **Toaster:** Added `<Toaster />` (sonner) to App.tsx for app-wide toast notifications.
+- **shadcn components installed:** select, switch, separator, sonner (added to existing button, input, card, label).
