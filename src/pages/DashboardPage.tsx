@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Plus, Compass } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Plus, Compass, LogOut, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
-import AppHeader from '@/components/AppHeader'
-import TripCard from '@/components/TripCard'
+import TripListItem from '@/components/TripListItem'
+import DashboardMap from '@/components/map/DashboardMap'
+import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import type { TripStatus } from '@/types'
 
@@ -17,18 +19,18 @@ const FILTER_OPTIONS: { label: string; value: TripStatus | 'all' }[] = [
   { label: 'Completed', value: 'completed' },
 ]
 
-function CardSkeleton() {
+function ListSkeleton() {
   return (
-    <div className="rounded-lg border bg-card">
-      <Skeleton className="h-32 rounded-b-none rounded-t-lg" />
-      <div className="space-y-3 p-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-5 w-3/5" />
-          <Skeleton className="h-5 w-16" />
+    <div className="space-y-0">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="border-b px-3 py-2.5">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-3/5" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <Skeleton className="mt-1.5 h-3 w-2/5" />
         </div>
-        <Skeleton className="h-4 w-2/5" />
-        <Skeleton className="h-4 w-1/4" />
-      </div>
+      ))}
     </div>
   )
 }
@@ -36,9 +38,14 @@ function CardSkeleton() {
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const userProfile = useAuthStore((s) => s.userProfile)
+  const { logout } = useAuthStore()
   const { isLoading, statusFilter, fetchTrips, setFilter } = useTripStore()
   const filteredTrips = useFilteredTrips()
+  const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
+  const [highlightedTripId, setHighlightedTripId] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const units = userProfile?.preferred_units ?? 'imperial'
 
@@ -48,63 +55,149 @@ export default function DashboardPage() {
     }
   }, [user?.id, fetchTrips])
 
-  return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+  const handleTripClick = useCallback(
+    (tripId: string) => {
+      if (selectedTripId === tripId) {
+        // Double-click / re-click navigates to planner
+        navigate(`/trip/${tripId}/plan`)
+      } else {
+        setSelectedTripId(tripId)
+      }
+    },
+    [selectedTripId, navigate],
+  )
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* Title bar */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">My Trips</h1>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Create Trip
+  const handleMarkerClick = useCallback(
+    (tripId: string) => {
+      setSelectedTripId(tripId)
+    },
+    [],
+  )
+
+  return (
+    <div className="flex h-screen min-h-0 w-full flex-col">
+      {/* Compact header */}
+      <header className="flex items-center justify-between border-b bg-background px-3 py-2 sm:px-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 lg:hidden"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            {sidebarOpen ? (
+              <PanelLeftClose className="h-4 w-4" />
+            ) : (
+              <PanelLeft className="h-4 w-4" />
+            )}
+          </Button>
+          <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
+            TrailForge
+          </Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            <span className="hidden sm:inline">New Trip</span>
+          </Button>
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/profile" aria-label="Profile">
+              <UserCircle className="h-5 w-5" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out">
+            <LogOut className="h-5 w-5" />
           </Button>
         </div>
+      </header>
 
-        {/* Status filter */}
-        <div className="mt-4 flex gap-1.5 overflow-x-auto">
-          {FILTER_OPTIONS.map((opt) => (
-            <Button
-              key={opt.value}
-              variant={statusFilter === opt.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter(opt.value)}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Content */}
-        {isLoading ? (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <CardSkeleton key={i} />
+      {/* Main layout: sidebar + map */}
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside
+          className={`${
+            sidebarOpen ? 'flex' : 'hidden'
+          } w-full shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground sm:w-[280px] lg:flex lg:w-80`}
+        >
+          {/* Status filters — sticky top */}
+          <div className="flex shrink-0 gap-1 overflow-x-auto border-b p-2">
+            {FILTER_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                variant={statusFilter === opt.value ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                onClick={() => setFilter(opt.value)}
+              >
+                {opt.label}
+              </Button>
             ))}
           </div>
-        ) : filteredTrips.length === 0 ? (
-          <div className="mt-16 flex flex-col items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Compass className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h2 className="mt-4 text-lg font-semibold">No trips yet</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create your first trip and start planning your next adventure!
-            </p>
-            <Button className="mt-6" onClick={() => setCreateOpen(true)}>
+
+          {/* Trip list — scrollable */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {isLoading ? (
+              <ListSkeleton />
+            ) : filteredTrips.length === 0 ? (
+              <div className="flex flex-col items-center px-4 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <Compass className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="mt-3 text-sm font-medium">No trips yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Create your first trip to get started
+                </p>
+              </div>
+            ) : (
+              filteredTrips.map((trip) => (
+                <TripListItem
+                  key={trip.id}
+                  trip={trip}
+                  units={units}
+                  isSelected={trip.id === selectedTripId}
+                  isHighlighted={trip.id === highlightedTripId}
+                  onHover={setHighlightedTripId}
+                  onClick={handleTripClick}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Create button — sticky bottom */}
+          <div className="shrink-0 border-t p-2">
+            <Button className="w-full" onClick={() => setCreateOpen(true)}>
               <Plus className="mr-1.5 h-4 w-4" />
               Create Trip
             </Button>
           </div>
-        ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredTrips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} units={units} />
-            ))}
-          </div>
+        </aside>
+
+        {/* Floating sidebar toggle for mobile when sidebar is closed */}
+        {!sidebarOpen && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="fixed bottom-4 left-4 z-30 shadow-lg lg:hidden"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <PanelLeft className="mr-1 h-4 w-4" />
+            Trips
+          </Button>
         )}
-      </main>
+
+        {/* Map area */}
+        <div className="relative flex min-h-[300px] flex-1 flex-col">
+          <DashboardMap
+            trips={filteredTrips}
+            selectedTripId={selectedTripId}
+            highlightedTripId={highlightedTripId}
+            onMarkerClick={handleMarkerClick}
+            onMarkerHover={setHighlightedTripId}
+          />
+        </div>
+      </div>
 
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
