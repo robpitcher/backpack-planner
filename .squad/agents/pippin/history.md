@@ -107,3 +107,66 @@
 **Status:** ✅ ALL FOUNDATION ITEMS DONE
 
 **Summary:** Phase 1 foundation complete — all 10 items delivered. Built: Supabase schema + RLS, email+Google auth, dashboard with trip cards, Trip CRUD (create/rename/delete/archive), unit system, shared types. All CI checks passing. Ready for Phase 2: map integration, route drawing, waypoints, itinerary panel. Squad synchronized.
+
+### WI#21 — Store Schema Extension for Phase 2
+- **Trip store extended:** `src/stores/tripStore.ts` — Added `route`, `waypoints`, `days`, `gearItems`, `conditions` state fields.
+- **CRUD actions:** Full add/update/remove/set for waypoints, days, gear items. `setRoute()` and `setConditions()` for route and conditions.
+- **Selectors:** `getTotalDistance()`, `getTotalElevationGain()`, `getDayMileage(dayId)`, `getGearWeights()` — all read from store state, return computed values.
+- **Types reused:** All Phase 1 types (Day, Waypoint, GearItem, Conditions) from `src/types/index.ts` already had the needed fields — no type changes required.
+- **Design decisions:**
+  - `TripPlannerState` interface separated from `TripState` using `extends` for clarity.
+  - Route stored as `Record<string, unknown> | null` matching the Trip.route_geojson type.
+  - Gear weight selector returns `{ base, worn, packed, total }` breakdown in oz.
+  - Selectors use `getState()` (non-reactive) — components should use `useTripStore(selector)` for reactive updates.
+
+### WI#1 — Mapbox Integration Setup
+- **Packages installed:** `mapbox-gl`, `@mapbox/mapbox-gl-draw`, `@types/mapbox-gl`.
+- **MapView component:** `src/components/map/MapView.tsx` — full-screen Mapbox GL map using `forwardRef` to expose map instance via `MapViewHandle`. Includes loading spinner, error state (missing token / network failure), nav controls, and `outdoors-v12` default style.
+- **MapStyleToggle component:** `src/components/map/MapStyleToggle.tsx` — button in top-right corner to toggle between topo (`outdoors-v12`) and satellite (`satellite-streets-v12`) styles. Uses Mountain/Satellite lucide icons.
+- **TripPlannerPage updated:** `src/pages/TripPlannerPage.tsx` — full-height layout with header bar + MapView filling remaining space. Map ref exposed for future parent control.
+- **Type declaration:** `src/types/mapbox-gl-draw.d.ts` — ambient module declaration for `@mapbox/mapbox-gl-draw` (no `@types` package available).
+- **Token:** Uses `VITE_MAPBOX_TOKEN` from env. `.env.example` already had the placeholder.
+- **Default center:** Utah (38.57°N, 111.09°W) at zoom 6 — great hiking territory.
+
+### WI#2 (Phase 2) — Route Drawing
+- **Packages installed:** `@turf/length`, `@turf/helpers` for distance calculation from polyline coordinates.
+- **DrawControls component:** `src/components/map/DrawControls.tsx` — toolbar with draw toggle, undo last point, clear route, and finish drawing buttons. Buttons appear conditionally based on state (undo/clear only when points exist, finish only when actively drawing).
+- **RouteStats component:** `src/components/map/RouteStats.tsx` — bottom-center stats bar showing total route distance (in user's preferred units via `formatDistance`) and point count. Uses Route and MapPin icons from lucide-react.
+- **MapView updated:** `src/components/map/MapView.tsx` — integrated MapboxDraw with custom trail-colored styling (orange dashed active line, red-brown solid finished line, white circles with red-brown stroke for vertices). Draw state syncs to trip store via `setRoute()`. Existing route loads from store on map init. Style toggle preserves draw features across style swaps.
+- **Route data flow:** Drawn polyline stored as GeoJSON Feature (LineString) in trip store `route` field. Store uses `Record<string, unknown>` type matching the Trip.route_geojson schema. Distance calculated via `@turf/length` in kilometers, converted to miles via `kilometersToMiles()`.
+- **Draw interaction model:** Click pencil to enter draw mode → click map to add points → click finish or pencil again to complete. Undo removes last vertex. Clear deletes entire route. After drawing, route is editable (drag vertices via direct_select mode).
+- **Design decisions:**
+  - Used MapboxDraw's built-in `draw_line_string` mode rather than custom click handlers — provides double-click-to-finish, vertex dragging, and feature editing for free.
+  - Custom DRAW_STYLES array overrides MapboxDraw defaults for trail-appropriate appearance.
+  - Route coords synced to store on every draw.create, draw.update, and draw.delete event.
+  - Style changes save/restore features via `draw.getAll()` / `draw.set()` to survive style swaps.
+
+### WI#4 (Phase 2) — Waypoint Placement & Types
+- **WaypointLayer component:** `src/components/map/WaypointLayer.tsx` — manages Mapbox markers for all waypoints, handles placement mode (click map → creation popup), drag-to-reposition, click-to-view/edit/delete. Loads existing waypoints from API on mount.
+- **WaypointForm component:** `src/components/map/WaypointForm.tsx` — reusable form for create/edit with name (required), type (select from 7 types), coordinates (read-only), and notes (textarea). Used inside Mapbox popups via `createRoot`.
+- **WaypointPopup component:** `src/components/map/WaypointPopup.tsx` — info popup showing name, type, elevation, notes, with Edit and Delete buttons.
+- **waypointUtils:** `src/components/map/waypointUtils.ts` — shared constants for waypoint type styles (colors, labels), SVG icon paths, and `createMarkerElement()` for HTML markers.
+- **WaypointList sidebar:** `src/components/sidebar/WaypointList.tsx` — waypoint list in the sidebar Map tab. Shows colored dot by type, name, elevation. Click pans the map to the waypoint via `panToWaypoint()`.
+- **DrawControls updated:** Added "Place Waypoint" (MapPin) button with purple active state. Waypoint placement and route drawing modes are mutually exclusive.
+- **MapView updated:** Added `tripId` prop, `isPlacingWaypoint` state, `mapReady` state, WaypointLayer integration. MapViewHandle now exposes `getIsPlacing`/`setIsPlacing`.
+- **TripPlannerPage updated:** Map tab now shows WaypointList instead of placeholder text. Default tab changed to "map". Clicking a waypoint in the list pans the map to it.
+- **shadcn components installed:** textarea, popover.
+- **Design decisions:**
+  - Custom HTML markers via `mapboxgl.Marker({ element })` with SVG circles for each waypoint type — simpler and more flexible than Mapbox symbol layers for interactive use.
+  - Markers are draggable; drag-end triggers optimistic store update + API persist with rollback on failure.
+  - Waypoint creation uses `createRoot` to render React form inside Mapbox popups — keeps the popup interactive.
+  - Placement mode and draw mode are mutually exclusive — entering one cancels the other.
+  - Waypoint CRUD flows through existing store actions (addWaypoint/updateWaypoint/removeWaypoint) backed by waypoints API.
+
+### WI#6+7 (Phase 2) — Day-by-Day Itinerary Tab
+- **ItineraryTab component:** `src/components/itinerary/ItineraryTab.tsx` — main itinerary panel with unassigned waypoints section, day cards, and "Add Day" button. Fetches days on mount, computes dates from trip start_date + day offset.
+- **DayCard component:** `src/components/itinerary/DayCard.tsx` — expandable card for each day showing day number, computed date, per-day stats (miles, elevation gain/loss), assigned waypoints with type-colored dots, waypoint assignment dropdown, move up/down reordering, delete with AlertDialog confirmation, and inline notes editing.
+- **Store extensions:** Added API-backed day actions to tripStore: `fetchDays`, `createDayApi`, `updateDayApi`, `deleteDayApi`, `reorderDaysApi`, `assignWaypointToDay`. All use optimistic updates with rollback on failure. `daysLoading` and `daysError` state added.
+- **Waypoint assignment:** "Unassigned Waypoints" section at top of itinerary shows waypoints with day_id=null. Each has a "Move to Day X" dropdown. Day cards show a "Remove" button (hover) to unassign. Assignment calls `assignWaypointToDay` API.
+- **TripPlannerPage updated:** Sidebar now has 3 tabs: Map, Gear, Itinerary (CalendarDays icon). Itinerary tab gets tripId and currentTrip.start_date.
+- **Design decisions:**
+  - Used Select dropdown for waypoint assignment instead of drag-and-drop — simpler, more accessible, and avoids adding a DnD library dependency for MVP.
+  - Day deletion optimistically unassigns waypoints (sets day_id to null in store) alongside removing the day.
+  - Reorder uses move up/down buttons rather than drag-and-drop for consistency with the assignment approach.
+  - Notes editing is inline (click to edit) rather than a modal — keeps the UX lightweight.
+  - Date computation uses trip start_date + day_number offset with timezone-safe `T00:00:00` parsing.

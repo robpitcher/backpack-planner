@@ -91,3 +91,67 @@
   - Auth email confirmations disabled in local config for frictionless dev testing
   - Supabase Studio on port 54323 (Supabase CLI default), API on 54321, DB on 54322
   - Seed data uses deterministic UUIDs for easy reference in tests
+
+### Phase 2 Database Migrations — Work Item #19 (2026-02-21)
+- **Migration file:** `supabase/migrations/20260221100001_create_gear_templates.sql`
+- **New table:** `gear_templates` — id, name, description, items (JSONB), created_at
+- **RLS:** Authenticated users can SELECT gear_templates (shared resource, no anon access)
+- **Seed data:** 4 starter templates — "3-Season Ultralight", "Winter 4-Season", "Desert / Arid", "Budget Starter"
+- **TypeScript types added:** `GearTemplate` and `GearTemplateItem` interfaces in `src/types/index.ts`
+- **Phase 1 coverage verified:** All other Phase 2 tables (trips, days, waypoints, gear_items, conditions) already had complete schemas and RLS from Phase 1 migrations. No additional columns or policies were needed.
+- **Key decisions:**
+  - `gear_templates.items` stores a JSONB array of template gear items (name, category, weight_oz, quantity)
+  - Gear templates are read-only for authenticated users in MVP — admin write access deferred to future iteration
+  - `conditions.source` kept as `condition_source` ENUM (not TEXT) — the ENUM provides stronger validation than bare TEXT
+
+### Gear List API + Checklist + Waypoint/Day APIs — Items 9, 11, 13, 16 (Phase 2)
+- **Files created:**
+  - `src/lib/api/gear.ts` — Full Gear CRUD: fetchGearItems, createGearItem, updateGearItem, deleteGearItem, toggleGearPacked, toggleGearWorn, fetchGearTemplates, loadGearTemplate
+  - `src/lib/api/waypoints.ts` — Full Waypoint CRUD: fetchWaypoints, createWaypoint, updateWaypoint, deleteWaypoint, assignWaypointToDay
+  - `src/lib/api/days.ts` — Full Day CRUD: fetchDays, createDay, updateDay, deleteDay, reorderDays
+- **File updated:** `src/stores/tripStore.ts` — Added API-backed gear actions (fetchGear, addGear, updateGear, deleteGear, togglePacked, toggleWorn, fetchTemplates, loadTemplate) with optimistic updates and rollback on error. Added gearTemplates and gearError state.
+- **Types verified:** All types (GearItem, GearTemplate, GearTemplateItem, Day, Waypoint, GearCategory) already present in `src/types/index.ts` — no changes needed.
+- **Architecture decisions:**
+  - All API files follow the same pattern as `trips.ts`: import supabase client, export ApiResult<T> wrapper, export typed input types, use `.select()` for return data
+  - Gear toggle operations (is_packed, is_worn) use optimistic updates in the store: UI updates immediately, DB syncs async, reverts on failure with error state
+  - `loadGearTemplate` fetches the template, maps its items array, bulk-inserts via `.insert(rows)`, and appends results to existing gearItems in store
+  - `reorderDays` uses `Promise.all` to batch-update `day_number` for each day — no server-side stored procedure needed for MVP
+  - Waypoint `assignWaypointToDay` delegates to `updateWaypoint` with `{ day_id }` — keeps it simple
+  - Pre-existing `tsc -b` build failure in MapView.tsx (frontend) — not in Gimli's domain. `tsc --noEmit` passes clean.
+
+### Gear List UI — Items 9, 10, 11 (Phase 2 Frontend)
+- **Files created:**
+  - `src/components/gear/GearTab.tsx` — Main gear panel: grouped-by-category view, sort by name/category, weight summary (base/worn/total), edit/delete actions, is_packed checkbox per item
+  - `src/components/gear/GearForm.tsx` — Create/edit gear form with validation (name <50 chars, positive weight, qty ≥ 1), unit-aware weight input (oz/g), category select, is_worn toggle
+  - `src/components/gear/GearTemplateModal.tsx` — Template picker dialog: lists templates with preview expand, shows warning when existing items present, bulk-loads template items
+  - `src/components/gear/PackChecklist.tsx` — Packing checklist view: progress bar (X of Y packed), optimistic toggle, strikethrough for packed items, sorted unpacked-first
+- **File updated:** `src/pages/TripPlannerPage.tsx` — Added sidebar with shadcn Tabs (Map / Gear), GearTab wired to tripId from URL params
+- **Pre-existing fix:** Removed unused imports in `WaypointLayer.tsx` (`WaypointType`, `WAYPOINT_STYLES`) to fix `tsc -b` build
+- **Architecture decisions:**
+  - Sidebar uses shadcn Tabs with Map and Gear tabs; Waypoints tab placeholder deferred for Pippin
+  - Weight totals computed via useMemo: base = non-worn items, worn = worn items, total = base + worn
+  - GearForm handles unit conversion: displays in user's preferred unit, converts to oz for storage
+  - Pack checklist uses optimistic togglePacked from store — no separate API call needed
+  - GearItemRow shows edit/delete on hover via group-hover opacity
+  - shadcn checkbox component added as dependency
+
+### Trip Share View + GPX Import/Export — Items 8, 14, 15 (Phase 2)
+- **Files created:**
+  - `src/lib/api/share.ts` — Public trip fetch API: `fetchPublicTrip()` returns trip + days + waypoints + gear summary using anon key. Gear summary shows count/weight only (no individual items per decisions.md)
+  - `src/lib/gpx/import.ts` — GPX parser using `@tmcw/togeojson`: parses GPX XML to GeoJSON route + waypoint array. Handles trk, rte, and wpt elements. MultiLineString flattened to LineString.
+  - `src/lib/gpx/export.ts` — GPX 1.1 generator: `buildGPX()` converts trip route (GeoJSON) + waypoints to valid GPX XML. `downloadGPX()` triggers browser file download.
+  - `src/components/map/GPXImportButton.tsx` — File upload button accepting .gpx files, parses and persists route + waypoints to DB, shows distance + waypoint count in toast
+  - `src/components/map/GPXExportButton.tsx` — Export button: generates GPX file from current route/waypoints and triggers download
+  - `src/components/ShareToggle.tsx` — Public/private toggle with copy-link URL display
+- **Files updated:**
+  - `src/pages/TripDetailPage.tsx` — Rewritten as public share view: read-only trip display with stats cards, itinerary, waypoints, gear summary, read-only Mapbox map (no draw controls). Fetches via `fetchPublicTrip()` — no auth required.
+  - `src/pages/TripPlannerPage.tsx` — Added GPX import/export buttons and share toggle to header bar
+  - `src/App.tsx` — Removed AuthGuard from `/trip/:tripId` route (now public share view)
+  - `package.json` — Added `@tmcw/togeojson` dependency
+- **Architecture decisions:**
+  - Share view uses same Supabase anon client — RLS policies from Phase 1 already allow anon SELECT on public trips/days/waypoints. No service-role key needed.
+  - Gear summary in share view shows aggregate count + weight only — individual items are owner-only per RLS and decisions.md
+  - ReadOnlyMap component renders route as a GeoJSON source/layer without MapboxDraw — interactive but no editing
+  - GPX import persists both route (via `updateTrip`) and waypoints (via `createWaypoint`) to DB in one flow
+  - GPX export generates GPX 1.1 with metadata, wpt elements, and trk/trkseg. Filename format: `{safeName}_{date}.gpx`
+  - Share toggle uses store's `updateTrip` for optimistic UI — toggles `is_public` field on trips table
