@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { LogOut, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default function AppHeader() {
   const { user, logout } = useAuthStore()
@@ -19,6 +20,8 @@ export default function AppHeader() {
               {user.email}
             </span>
           )}
+
+          <ThemeToggle />
 
           <Button variant="ghost" size="icon" asChild>
             <Link to="/profile" aria-label="Profile">

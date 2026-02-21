@@ -36,15 +36,15 @@ export default function TripDetailPage() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 text-gray-600">
-        <Lock className="h-12 w-12 text-gray-400" />
+      <div className="flex h-screen flex-col items-center justify-center gap-4 text-muted-foreground">
+        <Lock className="h-12 w-12 text-muted-foreground" />
         <h1 className="text-xl font-semibold">
           {error ?? 'Trip not found or is private'}
         </h1>
@@ -72,22 +72,22 @@ export default function TripDetailPage() {
   const numDays = days.length
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white">
+      <header className="border-b bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6">
           <Link
             to="/"
-            className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+            className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{trip.title}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{trip.title}</h1>
           {trip.description && (
-            <p className="mt-2 text-gray-600">{trip.description}</p>
+            <p className="mt-2 text-muted-foreground">{trip.description}</p>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
             {trip.region && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" /> {trip.region}
@@ -100,7 +100,7 @@ export default function TripDetailPage() {
                 {trip.end_date && ` – ${trip.end_date}`}
               </span>
             )}
-            <span className="rounded bg-gray-100 px-2 py-0.5 capitalize">
+            <span className="rounded bg-muted px-2 py-0.5 capitalize">
               {trip.status}
             </span>
           </div>
@@ -139,8 +139,8 @@ export default function TripDetailPage() {
         {/* Route map (read-only) */}
         {trip.route_geojson && (
           <section className="mb-8">
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">Route</h2>
-            <div className="overflow-hidden rounded-lg border bg-gray-100">
+            <h2 className="mb-3 text-lg font-semibold text-foreground">Route</h2>
+            <div className="overflow-hidden rounded-lg border bg-muted">
               <ReadOnlyMap routeGeoJSON={trip.route_geojson} waypoints={waypoints} />
             </div>
             <ElevationProfile
@@ -154,7 +154,7 @@ export default function TripDetailPage() {
         {/* Itinerary */}
         {days.length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-foreground">
               Itinerary
             </h2>
             <div className="space-y-3">
@@ -167,18 +167,18 @@ export default function TripDetailPage() {
                   return (
                     <div
                       key={day.id}
-                      className="rounded-lg border bg-white p-4"
+                      className="rounded-lg border bg-card p-4"
                     >
                       <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-medium text-foreground">
                           Day {day.day_number}
                           {day.date && (
-                            <span className="ml-2 text-sm text-gray-500">
+                            <span className="ml-2 text-sm text-muted-foreground">
                               {day.date}
                             </span>
                           )}
                         </h3>
-                        <div className="flex gap-3 text-sm text-gray-500">
+                        <div className="flex gap-3 text-sm text-muted-foreground">
                           {day.target_miles != null && (
                             <span>
                               {formatDistance(day.target_miles, 'imperial')}
@@ -193,7 +193,7 @@ export default function TripDetailPage() {
                         </div>
                       </div>
                       {day.notes && (
-                        <p className="mt-1 text-sm text-gray-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {day.notes}
                         </p>
                       )}
@@ -219,7 +219,7 @@ export default function TripDetailPage() {
         {/* Waypoints list (not assigned to days) */}
         {waypoints.filter((w) => !w.day_id).length > 0 && (
           <section className="mb-8">
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-foreground">
               Waypoints
             </h2>
             <div className="space-y-2">
@@ -228,19 +228,19 @@ export default function TripDetailPage() {
                 .map((wp) => (
                   <div
                     key={wp.id}
-                    className="flex items-center gap-3 rounded-lg border bg-white px-4 py-3"
+                    className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3"
                   >
                     <MapPin className="h-4 w-4 text-orange-600" />
                     <div>
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-foreground">
                         {wp.name}
                       </span>
-                      <span className="ml-2 text-xs text-gray-400 capitalize">
+                      <span className="ml-2 text-xs text-muted-foreground capitalize">
                         {wp.type.replace('_', ' ')}
                       </span>
                     </div>
                     {wp.elevation != null && (
-                      <span className="ml-auto text-sm text-gray-500">
+                      <span className="ml-auto text-sm text-muted-foreground">
                         {formatElevation(wp.elevation, 'imperial')}
                       </span>
                     )}
@@ -253,28 +253,28 @@ export default function TripDetailPage() {
         {/* Gear summary */}
         {gearSummary.itemCount > 0 && (
           <section className="mb-8">
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-foreground">
               Gear Summary
             </h2>
-            <div className="rounded-lg border bg-white p-4">
+            <div className="rounded-lg border bg-card p-4">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {gearSummary.itemCount}
                   </p>
-                  <p className="text-sm text-gray-500">Items</p>
+                  <p className="text-sm text-muted-foreground">Items</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {formatWeight(gearSummary.baseWeightOz, 'imperial')}
                   </p>
-                  <p className="text-sm text-gray-500">Base Weight</p>
+                  <p className="text-sm text-muted-foreground">Base Weight</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {formatWeight(gearSummary.totalWeightOz, 'imperial')}
                   </p>
-                  <p className="text-sm text-gray-500">Total Weight</p>
+                  <p className="text-sm text-muted-foreground">Total Weight</p>
                 </div>
               </div>
             </div>
@@ -297,11 +297,11 @@ function StatCard({
   value: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-white p-4">
+    <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
       {icon}
       <div>
-        <p className="text-sm font-semibold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-500">{label}</p>
+        <p className="text-sm font-semibold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </div>
     </div>
   )
@@ -384,7 +384,7 @@ function ReadOnlyMap({
 
   if (!mapboxToken) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-gray-500">
+      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
         Map unavailable
       </div>
     )

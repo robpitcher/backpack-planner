@@ -12,7 +12,7 @@ export default function WaypointList({
 }: WaypointListProps) {
   if (waypoints.length === 0) {
     return (
-      <div className="px-3 py-6 text-center text-sm text-gray-400">
+      <div className="px-3 py-6 text-center text-sm text-muted-foreground">
         No waypoints yet. Click &quot;Place Waypoint&quot; on the map to add one.
       </div>
     )
@@ -21,7 +21,7 @@ export default function WaypointList({
   return (
     <div className="flex flex-col">
       <div className="border-b px-3 py-2">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="text-sm font-semibold text-foreground">
           Waypoints ({waypoints.length})
         </h3>
       </div>
@@ -32,21 +32,21 @@ export default function WaypointList({
             <li key={wp.id}>
               <button
                 onClick={() => onSelect(wp)}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-accent transition-colors"
               >
                 <span
                   className="inline-block h-3 w-3 flex-shrink-0 rounded-full"
                   style={{ backgroundColor: style.color }}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-gray-800">
+                  <div className="truncate text-sm font-medium text-foreground">
                     {wp.name}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{style.label}</span>
                     {wp.elevation != null && (
                       <>
-                        <span className="text-gray-300">·</span>
+                        <span className="text-muted-foreground/50">·</span>
                         <span>{Math.round(wp.elevation)} ft</span>
                       </>
                     )}

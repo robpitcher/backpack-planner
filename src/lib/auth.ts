@@ -32,6 +32,18 @@ export async function signIn(
   }
 }
 
+// ── Sign In with Magic Link ──────────────────────────────────
+
+export async function signInWithMagicLink(
+  email: string,
+): Promise<AuthResult> {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+  })
+  return { data: null, error }
+}
+
 // ── Sign In with Google OAuth ────────────────────────────────
 
 export async function signInWithGoogle(): Promise<AuthResult> {
