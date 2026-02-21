@@ -1,17 +1,21 @@
-# Decision: PRD Decomposition — TrailForge MVP
+# Decisions — Backpack Planner / TrailForge MVP
 
-**Author:** Strider (Lead)
-**Date:** Auto
-**Status:** Proposed
-**Scope:** Full MVP work item breakdown from specs/mvp.md (v1.1)
+**Last Updated:** 2026-02-21T14:01Z
 
 ---
 
-## Context
+## Decision: PRD Decomposition — TrailForge MVP
+
+**Author:** Strider (Lead)  
+**Date:** 2026-02-21  
+**Status:** Approved  
+**Scope:** Full MVP work item breakdown from specs/mvp.md (v1.1)
+
+### Context
 
 Rob requested decomposition of the TrailForge PRD into concrete, actionable work items for the squad. The PRD defines 11 P0 features and 5 P1 features across a 3-month MVP timeline.
 
-## Architectural Decisions Made During Decomposition
+### Architectural Decisions Made During Decomposition
 
 1. **Route geometry storage:** The data model in the PRD has no explicit field for the route polyline. Decision: add a `route_geojson JSONB` column to the `Trip` table to store the Mapbox Draw GeoJSON output. This keeps it simple for the single-route-per-trip MVP constraint.
 
@@ -23,11 +27,9 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 
 5. **Scaffold includes CI:** The project scaffold should include basic CI (lint + type-check) from day one to prevent drift.
 
----
+### Work Item Breakdown
 
-## Work Item Breakdown
-
-### Phase 1 — Month 1: Foundation & Core CRUD
+#### Phase 1 — Month 1: Foundation & Core CRUD
 
 | # | Title | Owner | Depends On | Size | Done When |
 |---|-------|-------|------------|------|-----------|
@@ -49,7 +51,7 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 
 ---
 
-### Phase 2 — Month 2: Map, Route & Itinerary
+#### Phase 2 — Month 2: Map, Route & Itinerary
 
 | # | Title | Owner | Depends On | Size | Done When |
 |---|-------|-------|------------|------|-----------|
@@ -69,7 +71,7 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 
 ---
 
-### Phase 3 — Month 3: Gear, Sharing, P1 Features & Polish
+#### Phase 3 — Month 3: Gear, Sharing, P1 Features & Polish
 
 | # | Title | Owner | Depends On | Size | Done When |
 |---|-------|-------|------------|------|-----------|
@@ -96,7 +98,7 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 
 ---
 
-## Technical Risks & Pre-Work Decisions Needed
+### Technical Risks & Pre-Work Decisions Needed
 
 | # | Risk / Decision | Impact | Action |
 |---|----------------|--------|--------|
@@ -110,7 +112,7 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 
 ---
 
-## Summary
+### Summary
 
 - **33 work items** total (22 P0, 11 P1)
 - **Month 1:** 10 items — foundation, auth, dashboard, CRUD
