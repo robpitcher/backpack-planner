@@ -69,3 +69,10 @@
   - `UpdateTripInput` uses `Partial<Omit<Trip, 'id' | 'user_id' | 'created_at'>>` — prevents mutation of immutable fields
   - All functions respect RLS — no service-role key, no `.auth.admin` calls
 - **Key file paths:** `src/lib/api/trips.ts`, types from `src/types/index.ts`, client from `src/lib/supabase.ts`
+
+## 🎉 Phase 1 Complete (10/10 Items)
+
+**Date:** 2026-02-21  
+**Status:** ✅ ALL FOUNDATION ITEMS DONE
+
+**Summary:** Phase 1 foundation complete — all 10 items delivered. Built: Supabase schema + RLS, email+Google auth, dashboard with trip cards, Trip CRUD (create/rename/delete/archive), unit system, shared types. All CI checks passing. Ready for Phase 2: map integration, route drawing, waypoints, itinerary panel. Squad synchronized.
