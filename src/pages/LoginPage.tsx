@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signIn, signUp, signInWithGoogle } from '@/lib/auth'
+import { signIn, signUp, signInWithGoogle, signInWithMagicLink } from '@/lib/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [signUpSuccess, setSignUpSuccess] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [useMagicLink, setUseMagicLink] = useState(false)
 
   const navigate = useNavigate()
   const session = useAuthStore((s) => s.session)
@@ -65,6 +67,51 @@ export default function LoginPage() {
     if (oauthError) {
       setError(oauthError.message)
     }
+  }
+
+  async function handleMagicLink(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setIsLoading(true)
+    try {
+      const { error: otpError } = await signInWithMagicLink(email)
+      if (otpError) {
+        setError(otpError.message)
+      } else {
+        setMagicLinkSent(true)
+      }
+    } catch {
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (magicLinkSent) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Check your email</CardTitle>
+            <CardDescription>
+              We sent a magic link to <strong>{email}</strong>. Click it to sign
+              in — no password needed.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="justify-center">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setMagicLinkSent(false)
+                setUseMagicLink(false)
+              }}
+            >
+              Back to sign in
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
 
   if (signUpSuccess) {
@@ -147,7 +194,44 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {useMagicLink ? (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Sending link…' : 'Send magic link'}
+              </Button>
+
+              <Button
+                type="button"
+                variant="link"
+                className="w-full"
+                onClick={() => {
+                  setUseMagicLink(false)
+                  setError(null)
+                }}
+              >
+                Use password instead
+              </Button>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -188,7 +272,23 @@ export default function LoginPage() {
                   ? 'Create account'
                   : 'Sign in'}
             </Button>
+
+            {!isSignUp && (
+              <Button
+                type="button"
+                variant="link"
+                className="w-full"
+                onClick={() => {
+                  setUseMagicLink(true)
+                  setError(null)
+                }}
+              >
+                Sign in with magic link instead
+              </Button>
+            )}
           </form>
+            </>
+          )}
         </CardContent>
 
         <CardFooter className="justify-center">
