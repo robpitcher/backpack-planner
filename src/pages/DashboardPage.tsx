@@ -133,7 +133,7 @@ export default function DashboardPage() {
         >
           {/* Sidebar header */}
           <div className="shrink-0 border-b px-3 pb-2 pt-3">
-            <h2 className="text-sm font-semibold tracking-wide">Trips</h2>
+            <h2 className="text-base font-bold tracking-wide">Trips</h2>
             <p className="mb-1.5 mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Filters</p>
             <div className="flex flex-wrap gap-1">
               {FILTER_OPTIONS.map((opt) => (

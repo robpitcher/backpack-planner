@@ -113,7 +113,7 @@ interface TripState extends TripPlannerState {
 export const useTripStore = create<TripState>()((set, get) => ({
   trips: [],
   isLoading: false,
-  statusFilter: new Set<TripStatus>(),
+  statusFilter: new Set<TripStatus>(['draft', 'planned', 'active']),
 
   // Phase 2 initial state
   route: null,

@@ -61,7 +61,7 @@ describe('tripStore — Local State Management', () => {
       gearItems: [],
       route: null,
       conditions: null,
-      statusFilter: new Set(),
+      statusFilter: new Set(['draft', 'planned', 'active']),
       isLoading: false,
       gearError: null,
       gearTemplates: [],
@@ -78,10 +78,12 @@ describe('tripStore — Local State Management', () => {
 
     it('setFilter toggles statusFilter', () => {
       const { setFilter } = useTripStore.getState()
+      // 'active' is in the default set, toggling removes it
       setFilter('active')
-      expect(useTripStore.getState().statusFilter).toEqual(new Set(['active']))
+      expect(useTripStore.getState().statusFilter).toEqual(new Set(['draft', 'planned']))
+      // toggling again re-adds it
       setFilter('active')
-      expect(useTripStore.getState().statusFilter).toEqual(new Set())
+      expect(useTripStore.getState().statusFilter).toEqual(new Set(['draft', 'planned', 'active']))
     })
   })
 
@@ -323,7 +325,7 @@ describe('tripStore — Selectors', () => {
       gearItems: [],
       route: null,
       conditions: null,
-      statusFilter: new Set(),
+      statusFilter: new Set(['draft', 'planned', 'active']),
       isLoading: false,
       gearError: null,
       gearTemplates: [],
