@@ -4,8 +4,6 @@
 
 - [Node.js 20+](https://nodejs.org/) (LTS recommended)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (required for Supabase local)
-- [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started)
-
 ## Quick Start (Devcontainer)
 
 The fastest way to get running — everything is pre-configured.
@@ -16,7 +14,7 @@ The fastest way to get running — everything is pre-configured.
 4. Start the backend and frontend:
 
 ```bash
-supabase start
+npx supabase start
 npm run dev
 ```
 
@@ -45,11 +43,11 @@ cp .env.local.example .env.local
 4. Start Supabase and the dev server:
 
 ```bash
-supabase start
+npx supabase start
 npm run dev
 ```
 
-The `supabase start` command will:
+The `npx supabase start` command will:
 - Pull and start the Supabase Docker containers
 - Apply all migrations from `supabase/migrations/`
 - Seed the database with test data from `supabase/seed.sql`
@@ -75,11 +73,11 @@ npm run test             # Run tests
 npm run test:watch       # Run tests in watch mode
 
 # Supabase
-supabase start           # Start local Supabase stack
-supabase stop            # Stop local Supabase stack
-supabase status          # Show local service URLs and keys
-supabase db reset        # Reset DB: drop, re-migrate, re-seed
-supabase migration new <name>  # Create a new migration file
+npx supabase start           # Start local Supabase stack
+npx supabase stop            # Stop local Supabase stack
+npx supabase status          # Show local service URLs and keys
+npx supabase db reset        # Reset DB: drop, re-migrate, re-seed
+npx supabase migration new <name>  # Create a new migration file
 ```
 
 ## Resetting the Local Database
@@ -87,7 +85,7 @@ supabase migration new <name>  # Create a new migration file
 If your local database gets into a bad state or you want to start fresh:
 
 ```bash
-supabase db reset
+npx supabase db reset
 ```
 
 This will:
