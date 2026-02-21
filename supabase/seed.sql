@@ -4,6 +4,10 @@
 -- ============================================================
 -- Test user (password: "testpassword123")
 -- Uses Supabase's auth.users table, then extends to public.users
+--
+-- ⚠️  LOCAL DEVELOPMENT ONLY — This seed file is never run against
+-- production. It is only applied by `supabase start` or `supabase db reset`
+-- on a local Docker-based Supabase instance.
 -- ============================================================
 INSERT INTO auth.users (
   id, instance_id, email, encrypted_password, email_confirmed_at,
