@@ -1,73 +1,119 @@
-# React + TypeScript + Vite
+# 🏕️ TrailForge – Map-First Backpacking Trip Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**The smart way to plan multi-day wilderness adventures.** TrailForge is a web app for backpackers to create trips, draw routes on interactive topographic maps, place typed waypoints (campsites, water sources, passes, resupply points), build day-by-day itineraries, manage gear with weight tracking, check weather forecasts, and share trips with the community.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Key Features
 
-## React Compiler
+- **🗺️ Interactive Topographic Maps** – Mapbox GL with satellite/topo basemaps, responsive zoom and pan
+- **🛤️ Route Drawing & Analytics** – Draw routes with real-time distance and elevation tracking
+- **📍 Typed Waypoints** – Campsite, water source, mountain pass, resupply point, trailhead, POI
+- **📅 Day-by-Day Itineraries** – Organize your trip with waypoint assignments and daily summaries
+- **🎒 Gear Management** – Add gear, track weight by category, view total pack weight
+- **📋 Gear Templates** – Pre-built templates for ultralight, traditional, winter, and thru-hike styles
+- **⛅ Weather Forecasts** – NWS integration to check conditions along your route
+- **📤/📥 GPX Import/Export** – Share routes with other tools, import existing GPX files
+- **🌍 Public Trip Sharing** – Share read-only trip links for planning with friends
+- **🔐 Trip Duplication** – Deep clone trips to create variations or plan similar adventures
+- **💾 Responsive Design** – Collapsible sidebar, mobile-friendly UI, works on all devices
+- **🔑 Secure Authentication** – Email/password auth via Supabase with RLS policies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | React 19, TypeScript, Vite |
+| **State** | Zustand |
+| **UI** | Tailwind CSS v4, shadcn/ui, Recharts |
+| **Maps** | Mapbox GL JS, Turf.js (geospatial) |
+| **Backend** | Supabase (Auth, PostgreSQL, RLS) |
+| **Build** | Vite, ESLint, Prettier |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Easiest: GitHub Codespaces or DevContainer (Recommended)
+
+**Codespaces:** Click the green **"Code"** button on GitHub → **"Open with Codespaces"** → new codespace. Everything installs automatically.
+
+**VS Code Dev Container:** Open this repo in VS Code → click **"Reopen in Container"** when prompted (or run `Dev Containers: Reopen in Container`).
+
+Once the container is ready, start Supabase and the dev server:
+
+```bash
+npx supabase start
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+5. Visit [http://localhost:5173](http://localhost:5173)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Test account:** `hiker@example.com` / `testpassword123`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Manual Setup
+
+1. Install Node.js 20+ and Docker Desktop
+2. Clone and set up:
+
+```bash
+git clone <repo-url>
+cd backpack-planner
+npm install
+cp .env.local.example .env.local
 ```
+
+3. Start Supabase and dev server:
+
+```bash
+npx supabase start
+npm run dev
+```
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file (or use `.env.local.example` as a template):
+
+```env
+# Local defaults work for devcontainer; override for production
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_ANON_KEY=<local-key-from-supabase-start>
+
+# Required: Get your token from https://www.mapbox.com/account/tokens
+VITE_MAPBOX_TOKEN=<your-mapbox-token-here>
+```
+
+---
+
+## 📝 Available Scripts
+
+```bash
+npm run dev          # Start dev server (port 5173)
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+npm run type-check   # TypeScript type checking
+npm run format       # Format code with Prettier
+npm run test         # Run tests
+npm run test:watch   # Run tests in watch mode
+```
+
+---
+
+## 📚 Full Developer Docs
+
+For detailed setup instructions, database schema, seed data, project structure, and troubleshooting, see **[DEVELOPING.md](DEVELOPING.md)**.
+
+---
+
+## 📄 License
+
+MIT License © 2026 Rob Pitcher. See [LICENSE](LICENSE) for details.
+
+---
+
+**Built with ❤️ for backpackers, by backpackers.**
