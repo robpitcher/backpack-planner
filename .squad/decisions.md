@@ -345,3 +345,85 @@ Work Items #16, #18
 
 ### 4. Responsive sidebar strategy
 - TripPlannerPage sidebar uses a state-controlled toggle instead of a CSS-only approach. On `lg:` (1024px+) the sidebar is always visible via `lg:flex`. On narrower viewports, the toggle button shows/hides it. The sidebar takes full width on mobile (`w-full`) and fixed width on tablet+ (`sm:w-72 md:w-80`).
+
+---
+
+## Dark Mode Implementation — Pippin (2026-02-22)
+
+Work Item #20
+
+### 1. Default dark class in HTML
+- Added `class="dark"` to `<html>` element in `index.html` — ensures dark mode loads immediately on first visit (no flash of unstyled content).
+
+### 2. Custom theme provider over next-themes
+- **Decision:** Implemented custom `ThemeProvider` and `useTheme` hook in `src/lib/theme.tsx` instead of using the existing next-themes dependency.
+- **Rationale:** Lightweight, full control over behavior, no external dependencies needed for this use case. Manages theme state, localStorage sync, and HTML class application with three modes: "dark" (default), "light", "system".
+
+### 3. System mode watches prefers-color-scheme
+- System theme mode watches `prefers-color-scheme` media query and updates dynamically. Listener is properly cleaned up on unmount to prevent memory leaks.
+
+### 4. Theme persistence via localStorage
+- Theme preference stored in localStorage under key "theme". System mode is the only stateless mode (computed from OS preference). Dark/light selections persist across sessions.
+
+### 5. ThemeToggle component with icon animation
+- Created `src/components/ThemeToggle.tsx` — dropdown menu with Sun/Moon icons (lucide-react). Three options: Light, Dark, System. Icons animate via Tailwind dark: variant.
+
+### 6. ThemeToggle positioned in AppHeader
+- Added ThemeToggle between user email and profile icon in the header. Uses ghost button variant and matches existing icon sizing.
+
+---
+
+## Testing Framework Expansion — Legolas (2026-02-21)
+
+Work Item #22 — Test Setup & Patterns
+
+### 1. happy-dom for test environment
+- **Decision:** Use happy-dom as the Vitest DOM environment instead of jsdom.
+- **Rationale:** Lighter and faster than jsdom, sufficient for component testing with @testing-library/react, recommended by Vitest documentation.
+
+### 2. Global Supabase mock in setup file
+- Supabase client mocked globally in `src/test/setup.ts` rather than per-test-file mocks. Prevents real API calls, ensures consistent mock structure, allows tests to override specific method behaviors with `vi.mocked()`.
+
+### 3. Test files co-located with source files
+- Test files placed next to source files (e.g., `tripStore.test.ts` next to `tripStore.ts`), not in separate `__tests__/` directory. Follows Vitest convention and aligns with existing project pattern.
+
+### 4. Direct state access for non-reactive selectors
+- Computed selectors (getTotalDistance, getGearWeights, etc.) tested using `useTripStore.getState()` directly, not by calling the hook. These are plain functions that cannot be called outside components anyway.
+
+### 5. Avoid testing useFilteredTrips hook directly
+- Filter logic tested by accessing store state directly rather than calling the `useFilteredTrips()` hook. Hook integration covered by component tests when added.
+
+### 6. Property-based edge case testing
+- Follow explicit edge case enumeration pattern (zero, negative, null, empty arrays) rather than generative property-based testing. Matches existing project style and is sufficient for current scope.
+
+### 7. GPX tests use inline XML fixtures
+- GPX tests embed XML strings directly as template literals rather than loading external fixture files. Self-contained, easier to read and modify, avoids fixture file management.
+
+---
+
+## Theme Component Testing — Legolas (2026-02-22)
+
+Work Item #23 — ThemeProvider & ThemeToggle Tests
+
+### 1. Installed @testing-library/jest-dom
+- **Decision:** Added `@testing-library/jest-dom` for DOM matchers (toBeInTheDocument, toHaveTextContent, toHaveAttribute).
+- **Rationale:** Resolves "Invalid Chai property" errors when using DOM matchers. Imported in `src/test/setup.ts` via `import '@testing-library/jest-dom/vitest'`.
+
+### 2. userEvent instead of direct click()
+- **Decision:** Used `userEvent` for interactions instead of calling `click()` directly or using `fireEvent`.
+- **Rationale:** More realistic user interactions with proper event sequencing. Async/await handling eliminates React act() warnings.
+
+### 3. Mocked window.matchMedia for system theme testing
+- window.matchMedia stubbed globally to control system theme preference in tests. Mock returns proper MediaQueryList shape with addEventListener/removeEventListener. Tests both dark and light preferences and verify listener cleanup.
+
+### 4. Async assertions with waitFor
+- Used `waitFor` for testing mediaQuery listener registration and state updates. Handles async useEffect lifecycle in ThemeProvider.
+
+### 5. Test isolation via beforeEach
+- Each test clears localStorage, resets document.documentElement.className, and resets matchMedia to default dark preference. Prevents test pollution across test suite.
+
+### 6. ThemeProvider tests focus on state management
+- 18 tests covering initialization (default dark, localStorage loading, system theme detection), setTheme behavior, DOM manipulation, edge cases.
+
+### 7. ThemeToggle tests focus on UI interaction
+- 14 tests covering rendering, dropdown menu behavior, theme switching, accessibility, integration with ThemeProvider, error handling without provider.

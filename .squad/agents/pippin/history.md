@@ -193,3 +193,30 @@
   - 100 sample points for smooth profile without performance issues.
   - Manual elevation interpolation instead of @turf/along (turf's along returns 2D points, doesn't preserve elevation).
   - Stats computed from sampled points (gain/loss via sequential difference summing).
+
+### Dark Mode Theme System (2026-02-22)
+
+- **Theme provider:** `src/lib/theme.tsx` — custom ThemeProvider with ThemeContext and useTheme hook. Supports 3 modes: "dark" (default), "light", "system". Persists to localStorage (key: "theme"). Applies/removes `dark` class on `<html>` element. System mode watches `prefers-color-scheme` media query.
+- **ThemeToggle component:** `src/components/ThemeToggle.tsx` — dropdown menu with Sun/Moon icons (lucide-react) and 3 theme options. Icon animates between sun and moon based on current theme using Tailwind dark: variant.
+- **AppHeader integration:** Added ThemeToggle button between user email and profile icon in `src/components/AppHeader.tsx`.
+- **Default dark mode:** `index.html` has `class="dark"` on `<html>` element — ensures dark mode loads immediately on first visit (no flash of light theme).
+- **App.tsx:** Wrapped entire app with ThemeProvider at the root level (outside BrowserRouter).
+- **Design decisions:**
+  - Used custom theme provider instead of next-themes library (which was already installed but unused) — simpler, no external deps beyond React Context.
+  - Dark is the default theme — first-time visitors see dark mode. Light and system modes available via toggle.
+  - localStorage key "theme" (standard convention).
+  - Sun/Moon icon transition uses Tailwind classes with absolute positioning for smooth swap.
+  - Theme applies immediately on load via HTML class (no FOUC) and syncs with localStorage changes.
+
+---
+
+## Team Update: Session 2026-02-21T21:24:38Z
+
+**Status:** Orchestration log and session log written. Decisions merged into decisions.md. Dark mode implementation decision recorded.
+
+**Impact on Pippin:**
+- Dark mode implementation decision (6 sub-decisions) recorded in team decisions.md for future reference
+- Dark mode default established as team standard — all future UI work respects this choice
+- Custom ThemeProvider pattern now team standard (avoiding next-themes dependency)
+
+**Cross-team:** Legolas completed 32 new theme component tests covering ThemeProvider and ThemeToggle, validating Pippin's implementation.
