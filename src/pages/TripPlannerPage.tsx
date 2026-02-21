@@ -54,7 +54,7 @@ export default function TripPlannerPage() {
   return (
     <div className="flex h-screen min-h-0 w-full flex-col">
       {/* Header bar */}
-      <header className="flex items-center justify-between border-b bg-white px-3 py-2 sm:px-4">
+      <header className="flex items-center justify-between border-b bg-background px-3 py-2 sm:px-4">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -76,11 +76,11 @@ export default function TripPlannerPage() {
             <>
               <GPXImportButton tripId={tripId} />
               <GPXExportButton tripId={tripId} />
-              <div className="hidden h-6 w-px bg-gray-200 sm:block" />
+              <div className="hidden h-6 w-px bg-border sm:block" />
               <ShareToggle tripId={tripId} isPublic={isPublic} />
             </>
           )}
-          <span className="hidden text-sm text-gray-500 sm:inline">
+          <span className="hidden text-sm text-muted-foreground sm:inline">
             {tripId ? `Trip: ${tripId.slice(0, 8)}…` : 'New Trip'}
           </span>
         </div>
@@ -92,7 +92,7 @@ export default function TripPlannerPage() {
         <aside
           className={`${
             sidebarOpen ? 'flex' : 'hidden'
-          } w-full shrink-0 flex-col border-r bg-white sm:w-72 md:w-80 lg:flex lg:w-80`}
+          } w-full shrink-0 flex-col border-r bg-background sm:w-72 md:w-80 lg:flex lg:w-80`}
         >
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
             <TabsList className="mx-2 mt-2 w-auto shrink-0">

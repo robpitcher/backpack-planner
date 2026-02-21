@@ -46,7 +46,7 @@ export default function ShareToggle({ tripId, isPublic }: ShareToggleProps) {
         {isPublic ? (
           <Globe className="h-4 w-4 text-green-600" />
         ) : (
-          <Lock className="h-4 w-4 text-gray-400" />
+          <Lock className="h-4 w-4 text-muted-foreground" />
         )}
         <Label htmlFor="share-toggle" className="text-sm font-medium">
           {isPublic ? 'Public' : 'Private'}
@@ -63,7 +63,7 @@ export default function ShareToggle({ tripId, isPublic }: ShareToggleProps) {
           <input
             readOnly
             value={shareUrl}
-            className="flex-1 truncate rounded border bg-gray-50 px-2 py-1 text-xs text-gray-600"
+            className="flex-1 truncate rounded border bg-muted px-2 py-1 text-xs text-muted-foreground"
           />
           <Button variant="outline" size="sm" onClick={handleCopy}>
             {copied ? (

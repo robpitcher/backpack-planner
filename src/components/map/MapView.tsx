@@ -329,7 +329,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
 
   if (error) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gray-50 text-gray-600">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted text-muted-foreground">
         <AlertTriangle className="h-10 w-10 text-amber-500" />
         <p className="max-w-md text-center text-sm">{error}</p>
       </div>
@@ -339,8 +339,8 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
   return (
     <div className="relative h-full w-full">
       {isLoading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-100/80">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-muted/80">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       )}
       <MapStyleToggle currentStyle={mapStyle} onToggle={handleStyleChange} />

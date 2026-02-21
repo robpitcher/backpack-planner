@@ -75,29 +75,29 @@ export default function DayCard({
   }
 
   return (
-    <div className="rounded-lg border bg-white">
+    <div className="rounded-lg border bg-card">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-2 px-3 py-2.5 text-left"
       >
         {expanded ? (
-          <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
-          <ChevronUp className="h-4 w-4 shrink-0 text-gray-400" />
+          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm">Day {day.day_number}</span>
             {dayDate && (
-              <span className="text-xs text-gray-500">{dayDate}</span>
+              <span className="text-xs text-muted-foreground">{dayDate}</span>
             )}
             <Badge variant="outline" className="text-[10px]">
               {waypoints.length} waypoint{waypoints.length !== 1 ? 's' : ''}
             </Badge>
           </div>
           {/* Inline stats */}
-          <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
             {day.target_miles != null && day.target_miles > 0 && (
               <span className="flex items-center gap-0.5">
                 <Mountain className="h-3 w-3" />
@@ -182,7 +182,7 @@ export default function DayCard({
                 return (
                   <li
                     key={wp.id}
-                    className="group flex items-center gap-2 rounded px-1.5 py-1 hover:bg-gray-50"
+                    className="group flex items-center gap-2 rounded px-1.5 py-1 hover:bg-accent"
                   >
                     <span
                       className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
@@ -190,7 +190,7 @@ export default function DayCard({
                     />
                     <span className="flex-1 truncate text-sm">{wp.name}</span>
                     {wp.elevation != null && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {formatElevation(wp.elevation, units)}
                       </span>
                     )}
@@ -207,7 +207,7 @@ export default function DayCard({
               })}
             </ul>
           ) : (
-            <p className="text-xs text-gray-400 py-1">
+            <p className="text-xs text-muted-foreground py-1">
               No waypoints assigned to this day.
             </p>
           )}
@@ -260,7 +260,7 @@ export default function DayCard({
           ) : (
             <button
               onClick={() => setEditingNotes(true)}
-              className="w-full text-left text-xs text-gray-400 hover:text-gray-600 rounded px-1 py-0.5"
+              className="w-full text-left text-xs text-muted-foreground hover:text-foreground rounded px-1 py-0.5"
             >
               {day.notes || '+ Add notes…'}
             </button>

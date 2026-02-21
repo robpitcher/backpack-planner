@@ -126,7 +126,7 @@ export default function ItineraryTab({ tripId, startDate }: ItineraryTabProps) {
   if (daysLoading && days.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -142,8 +142,8 @@ export default function ItineraryTab({ tripId, startDate }: ItineraryTabProps) {
 
       {/* Unassigned waypoints */}
       {unassignedWaypoints.length > 0 && (
-        <div className="rounded-lg border border-dashed bg-gray-50 p-2.5">
-          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="rounded-lg border border-dashed bg-muted p-2.5">
+          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Unassigned Waypoints ({unassignedWaypoints.length})
           </h3>
           <ul className="space-y-1">
@@ -152,7 +152,7 @@ export default function ItineraryTab({ tripId, startDate }: ItineraryTabProps) {
               return (
                 <li
                   key={wp.id}
-                  className="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-white"
+                  className="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-accent"
                 >
                   <span
                     className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
@@ -160,7 +160,7 @@ export default function ItineraryTab({ tripId, startDate }: ItineraryTabProps) {
                   />
                   <span className="flex-1 truncate text-sm">{wp.name}</span>
                   {wp.elevation != null && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {formatElevation(wp.elevation, units)}
                     </span>
                   )}

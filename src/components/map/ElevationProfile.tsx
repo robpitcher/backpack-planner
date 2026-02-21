@@ -208,11 +208,11 @@ export default function ElevationProfile({
   const elevLabel = units === 'metric' ? 'm' : 'ft'
 
   return (
-    <div className="border-t bg-white">
+    <div className="border-t bg-background">
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="flex w-full items-center justify-between px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        className="flex w-full items-center justify-between px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
       >
         <span className="flex items-center gap-2">
           <Mountain className="h-4 w-4" />
@@ -262,7 +262,7 @@ export default function ElevationProfile({
                     if (!active || !payload?.length) return null
                     const d = payload[0].payload as (typeof chartData)[0]
                     return (
-                      <div className="rounded border bg-white px-2 py-1 text-xs shadow">
+                      <div className="rounded border bg-popover px-2 py-1 text-xs shadow">
                         <p>
                           {formatDistance(d.rawDistanceMi, units)} ·{' '}
                           {formatElevation(d.rawElevFt, units)}
@@ -311,12 +311,12 @@ export default function ElevationProfile({
               value={formatElevation(stats.totalLoss, units)}
             />
             <StatBox
-              icon={<Mountain className="h-3 w-3 text-gray-600" />}
+              icon={<Mountain className="h-3 w-3 text-foreground" />}
               label="Max"
               value={formatElevation(stats.maxElev, units)}
             />
             <StatBox
-              icon={<Mountain className="h-3 w-3 text-gray-400" />}
+              icon={<Mountain className="h-3 w-3 text-muted-foreground" />}
               label="Min"
               value={formatElevation(stats.minElev, units)}
             />
@@ -337,10 +337,10 @@ function StatBox({
   value: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 rounded bg-gray-50 p-1.5">
+    <div className="flex flex-col items-center gap-0.5 rounded bg-muted p-1.5">
       {icon}
-      <span className="font-medium text-gray-900">{value}</span>
-      <span className="text-gray-400">{label}</span>
+      <span className="font-medium text-foreground">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
     </div>
   )
 }

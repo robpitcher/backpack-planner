@@ -91,7 +91,7 @@ export default function ConditionsTab({ tripId: _tripId, startDate, endDate }: C
 
   if (loading && !forecast) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 p-8 text-gray-500">
+      <div className="flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">
         <Loader2 className="h-8 w-8 animate-spin" />
         <p className="text-sm">Loading weather forecast…</p>
       </div>
@@ -100,7 +100,7 @@ export default function ConditionsTab({ tripId: _tripId, startDate, endDate }: C
 
   if (error && !forecast) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 p-8 text-gray-500">
+      <div className="flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">
         <AlertTriangle className="h-8 w-8 text-amber-500" />
         <p className="text-sm text-center">{error}</p>
         <Button variant="outline" size="sm" onClick={() => loadForecast()}>
@@ -117,10 +117,10 @@ export default function ConditionsTab({ tripId: _tripId, startDate, endDate }: C
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">
+          <h3 className="text-sm font-semibold text-foreground">
             {forecast.locationName}
           </h3>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground">
             Updated{' '}
             {new Date(forecast.fetchedAt).toLocaleTimeString('en-US', {
               hour: 'numeric',
@@ -175,15 +175,15 @@ function ForecastCard({
       className={`rounded-lg border p-3 ${
         isTrip
           ? 'border-orange-200 bg-orange-50'
-          : 'border-gray-100 bg-white'
+          : 'border bg-card'
       }`}
     >
       <div className="flex items-start gap-3">
-        <IconComponent className="mt-0.5 h-8 w-8 shrink-0 text-gray-600" />
+        <IconComponent className="mt-0.5 h-8 w-8 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-foreground">
                 {day.name}
                 {isTrip && (
                   <span className="ml-2 rounded bg-orange-200 px-1.5 py-0.5 text-xs text-orange-800">
@@ -191,13 +191,13 @@ function ForecastCard({
                   </span>
                 )}
               </p>
-              <p className="text-xs text-gray-400">{dateLabel}</p>
+              <p className="text-xs text-muted-foreground">{dateLabel}</p>
             </div>
           </div>
 
-          <p className="mt-1 text-xs text-gray-600">{day.shortForecast}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{day.shortForecast}</p>
 
-          <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Thermometer className="h-3 w-3" />
               {day.temperatureHigh != null && (

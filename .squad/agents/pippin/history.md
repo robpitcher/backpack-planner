@@ -220,3 +220,32 @@
 - Custom ThemeProvider pattern now team standard (avoiding next-themes dependency)
 
 **Cross-team:** Legolas completed 32 new theme component tests covering ThemeProvider and ThemeToggle, validating Pippin's implementation.
+
+### Dark Mode Contrast Improvement (2026-02-22)
+
+- **Problem:** Dark mode surfaces were all near-black with invisible borders — cards, panels, and backgrounds blended together.
+- **Solution:** Revised all dark mode CSS custom properties in `src/index.css` `.dark` block with a layered palette:
+  - Added a subtle blue-gray tint (oklch hue 285.75°, low chroma 0.005–0.007) across all dark surfaces for visual warmth — moves from "pure black" to "GitHub/Slack dark" aesthetic.
+  - **Layered lightness:** background (0.16) → sidebar (0.185) → card (0.21) → popover (0.235) → muted (0.24) → secondary (0.25) → accent (0.27) → input (0.30) → border (0.32). Each layer is visibly distinct.
+  - **Borders fixed:** Changed `--border` from `oklch(1 0 0 / 10%)` (near-invisible white opacity) to `oklch(0.32 0.006 285.75)` (solid, visible blue-gray). Same for `--sidebar-border` and `--input`.
+  - **Accent/hover states:** Bumped from 0.269 to 0.27 with blue tint — hover states are clearly visible against card backgrounds.
+- **Values kept unchanged:** foreground colors, primary, destructive, chart colors, ring, all foreground variants.
+- **Aesthetic:** Still firmly "dark mode" — just not pitch black. Think GitHub dark or Slack dark.
+
+### Theme Persistence Bug Fix (2026-02-22)
+
+- **Problem:** Dark/light theme did not visually persist when navigating from Dashboard to TripPlannerPage (or TripDetailPage). User sets dark mode on dashboard, clicks into a trip → sees light mode.
+- **Root cause:** The ThemeProvider and class toggling were correct — the `dark` class stayed on `<html>` across SPA navigation. The real issue was that TripPlannerPage, TripDetailPage, and their subcomponents used **hardcoded light-mode colors** (`bg-white`, `text-gray-900`, `text-gray-500`, `bg-gray-50`) instead of theme-aware CSS variable classes (`bg-background`, `text-foreground`, `text-muted-foreground`, `bg-muted`). These hardcoded colors don't respond to the `.dark` CSS custom properties, so the pages always looked light regardless of theme state.
+- **Secondary issue:** `src/components/ui/sonner.tsx` imported `useTheme` from `next-themes` (an installed but unused package) instead of our custom `@/lib/theme` provider, so toast notifications always used the wrong theme.
+- **Fix:** Replaced all hardcoded gray/white color classes with theme-aware equivalents across 10 files:
+  - `src/pages/TripPlannerPage.tsx` — header and sidebar `bg-white` → `bg-background`
+  - `src/pages/TripDetailPage.tsx` — full page conversion to theme-aware colors
+  - `src/components/ui/sonner.tsx` — `useTheme` import switched to `@/lib/theme`
+  - `src/components/sidebar/WaypointList.tsx` — text and hover colors
+  - `src/components/itinerary/DayCard.tsx` — card background and text colors
+  - `src/components/itinerary/ItineraryTab.tsx` — unassigned section and hover states
+  - `src/components/map/ElevationProfile.tsx` — panel background, tooltip, stat boxes
+  - `src/components/map/MapView.tsx` — loading and error state backgrounds
+  - `src/components/conditions/ConditionsTab.tsx` — weather cards and text
+  - `src/components/ShareToggle.tsx` — icon and input colors
+- **Lesson:** When adding new pages/components, always use `bg-background`/`bg-card`/`bg-muted` + `text-foreground`/`text-muted-foreground` — never raw `bg-white`/`text-gray-*`. The CSS variable system in `index.css` handles light/dark switching.
