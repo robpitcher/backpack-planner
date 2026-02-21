@@ -78,6 +78,13 @@ export default function DashboardPage() {
     setSelectedTripId(null)
   }, [])
 
+  const handleWaypointClick = useCallback(
+    (tripId: string, waypointId: string) => {
+      navigate(`/trip/${tripId}/plan?waypoint=${waypointId}`)
+    },
+    [navigate],
+  )
+
   return (
     <div className="flex h-screen min-h-0 w-full flex-col">
       {/* Compact header */}
@@ -205,6 +212,7 @@ export default function DashboardPage() {
             onMarkerClick={handleMarkerClick}
             onMarkerHover={setHighlightedTripId}
             onMapClick={handleMapBackgroundClick}
+            onWaypointClick={handleWaypointClick}
           />
         </div>
       </div>

@@ -34,6 +34,7 @@ interface DashboardMapProps {
   onMarkerClick?: (tripId: string) => void
   onMarkerHover?: (tripId: string | null) => void
   onMapClick?: () => void
+  onWaypointClick?: (tripId: string, waypointId: string) => void
 }
 
 export default function DashboardMap({
@@ -43,6 +44,7 @@ export default function DashboardMap({
   onMarkerClick,
   onMarkerHover,
   onMapClick,
+  onWaypointClick,
 }: DashboardMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -50,15 +52,23 @@ export default function DashboardMap({
   const waypointMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const routeLayerRef = useRef<string | null>(null)
   const onMapClickRef = useRef(onMapClick)
+  const onWaypointClickRef = useRef(onWaypointClick)
+  const selectedTripIdRef = useRef(selectedTripId)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [waypoints, setWaypoints] = useState<Waypoint[]>([])
 
-  // Keep callback ref current without re-creating map
+  // Keep callback refs current without re-creating markers
   useEffect(() => {
     onMapClickRef.current = onMapClick
   }, [onMapClick])
+  useEffect(() => {
+    onWaypointClickRef.current = onWaypointClick
+  }, [onWaypointClick])
+  useEffect(() => {
+    selectedTripIdRef.current = selectedTripId
+  }, [selectedTripId])
   // Compute centroids
   const centroids: TripCentroid[] = trips
     .map((t) => {
@@ -263,7 +273,19 @@ export default function DashboardMap({
         const el = document.createElement('div')
         el.className = 'dashboard-waypoint-marker'
         el.style.cssText =
-          'width:8px;height:8px;border-radius:50%;background:#D97706;border:1.5px solid white;cursor:default;box-shadow:0 1px 2px rgba(0,0,0,0.3);'
+          'width:14px;height:14px;border-radius:50%;background:#D97706;border:2px solid white;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform 0.15s;'
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const tripId = selectedTripIdRef.current
+          if (tripId) onWaypointClickRef.current?.(tripId, wp.id)
+        })
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'scale(1.4)'
+        })
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'scale(1)'
+        })
 
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat([wp.lng, wp.lat])

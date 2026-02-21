@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft } from 'lucide-react'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
@@ -20,6 +20,7 @@ import type { Waypoint } from '@/types'
 
 export default function TripPlannerPage() {
   const { tripId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const mapRef = useRef<MapViewHandle>(null)
   const waypoints = useTripStore((s) => s.waypoints)
   const route = useTripStore((s) => s.route)
@@ -42,6 +43,23 @@ export default function TripPlannerPage() {
   useEffect(() => {
     if (currentTrip) setIsPublic(currentTrip.is_public)
   }, [currentTrip])
+
+  // Auto-select waypoint from query param (e.g., from dashboard click)
+  const pendingWaypointId = searchParams.get('waypoint')
+  useEffect(() => {
+    if (!pendingWaypointId || waypoints.length === 0) return
+    const wp = waypoints.find((w) => w.id === pendingWaypointId)
+    if (wp) {
+      const map = mapRef.current?.getMap() ?? null
+      panToWaypoint(map, wp)
+      // Clear the query param so it doesn't re-trigger
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('waypoint')
+        return next
+      }, { replace: true })
+    }
+  }, [pendingWaypointId, waypoints, setSearchParams])
 
   const handleWaypointSelect = useCallback(
     (waypoint: Waypoint) => {
