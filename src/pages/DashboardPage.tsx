@@ -141,7 +141,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Trip list — scrollable */}
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedTripId(null)
+            }}
+          >
             {isLoading ? (
               <ListSkeleton />
             ) : filteredTrips.length === 0 ? (
