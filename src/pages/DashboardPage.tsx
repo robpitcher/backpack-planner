@@ -107,10 +107,6 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            <span className="hidden sm:inline">New Trip</span>
-          </Button>
           <ThemeToggle />
           <Button variant="ghost" size="icon" asChild>
             <Link to="/profile" aria-label="Profile">
