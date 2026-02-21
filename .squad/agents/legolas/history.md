@@ -13,7 +13,7 @@
 - **Phase 1 items 1–10 are ready** for pickup — foundation, auth, dashboard, CRUD
 - See `.squad/decisions/decisions.md` for full breakdown with parallelization strategy
 - **Tech Stack Confirmed:**
-  - Frontend: Vite + React 18 + TypeScript + Tailwind + shadcn/ui + Zustand
+  - Frontend: Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui + Zustand
   - Backend: Supabase (Auth, Postgres, RLS, Edge Functions)
   - Mapping: Mapbox GL JS
   - State: All units stored in imperial in DB; client-side conversion only
@@ -23,3 +23,9 @@
   - **Phase 3:** GPX edge-case tests with malformed files, elevation profile validation, full E2E tests; QA polish heavy involvement (Item 33)
 - **Risk: Unit conversion correctness** — centralized utility must have thorough unit tests (Item 6 support)
 - **Risk: GPX edge cases** — write edge-case tests with malformed GPX files for Item 24
+
+### Phase 1 Foundation Complete (2026-02-21)
+- **Project scaffold and schema ready** for integration.
+- **Item #2 (Scaffold):** Vite + React 19 + Tailwind v4 boots on localhost:5173.
+- **Item #1 (Schema):** 7 tables in supabase/migrations/ with RLS, route_geojson JSONB, cascading FKs.
+- **Unit conversion utility (Item #6)** coming next — plan to write property-based tests for round-trip conversions (mi↔km, ft↔m, oz↔g, °F↔°C).

@@ -2,11 +2,30 @@
 
 ## Project Context
 
-- **Project:** Backpack Planner — a webapp for outdoor adventurers with interactive maps
-- **Stack:** Web application (frontend + backend + mapping — TBD)
+- **Project:** Backpack Planner (TrailForge) — a map-first, day-by-day trip planner for backpackers
+- **Stack:** Vite + React 19 + TypeScript (strict), Tailwind CSS v4, shadcn/ui, Zustand, React Router v6, Supabase
 - **User:** Rob
 
 ## Learnings
+
+- **Scaffold setup (WI#2):** Vite scaffolds React 19 by default (not 18). Kept React 19 since it's backwards-compatible and the current stable version.
+- **Tailwind v4:** Uses `@tailwindcss/vite` plugin and `@import "tailwindcss"` in CSS — no tailwind.config.js needed.
+- **shadcn/ui init:** Requires `@/*` path alias in the **root** tsconfig.json (not just tsconfig.app.json) for detection. Uses new-york style by default.
+- **Path alias:** `@/*` → `./src/*` configured in both tsconfig.json, tsconfig.app.json, and vite.config.ts.
+- **Key file paths:**
+  - `src/App.tsx` — Router with all route definitions
+  - `src/pages/` — LoginPage, DashboardPage, TripPlannerPage, TripDetailPage
+  - `src/stores/tripStore.ts` — Zustand shell store (empty, ready to extend)
+  - `src/lib/supabase.ts` — Supabase client (env-var-based)
+  - `src/lib/utils.ts` — shadcn cn() utility
+  - `src/components/` — empty, ready for components (shadcn UI goes in src/components/ui/)
+  - `src/utils/` — empty, for unit conversion module
+  - `src/types/` — empty, for shared TypeScript types
+  - `.env.example` — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_MAPBOX_TOKEN
+  - `components.json` — shadcn/ui configuration
+- **CI scripts:** `lint`, `type-check`, `format`, `format:check`, `build` all in package.json
+- **ESLint:** Flat config with typescript-eslint + react-hooks + react-refresh + prettier integration
+- **Route structure:** / → redirect /dashboard, /login, /dashboard, /trip/:tripId/plan, /trip/:tripId
 
 ### PRD Decomposition & Breakdown (2026-02-21)
 - PRD decomposed into **33 work items across 3 phases** (22 P0, 11 P1)
