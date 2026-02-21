@@ -1,6 +1,6 @@
 # Decisions — Backpack Planner / TrailForge MVP
 
-**Last Updated:** 2026-02-21T14:15Z
+**Last Updated:** 2026-02-21T17:50Z
 
 ---
 
@@ -435,3 +435,147 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 - `src/components/ui/dialog.tsx` (shadcn component)
 - `src/components/ui/dropdown-menu.tsx` (shadcn component)
 - `src/components/ui/alert-dialog.tsx` (shadcn component)
+
+---
+
+## Decision: Devcontainer & Local Dev Setup — Gimli (2026-02-21)
+
+### 1. No docker-compose — Supabase CLI manages its own stack
+- **Decision:** Single `devcontainer.json` with no `docker-compose.yml`. Supabase CLI's `supabase start` handles all Supabase services (Postgres, Auth, Studio, etc.) via its own Docker orchestration.
+- **Rationale:** Adding a docker-compose would duplicate what the CLI already does and create version-sync headaches. The CLI is the officially supported local dev path.
+- **Impact:** Developers run `supabase start` manually after container creation. Simple and predictable.
+
+### 2. Docker-in-Docker for Supabase CLI
+- **Decision:** Added `ghcr.io/devcontainers/features/docker-in-docker:2` feature to the devcontainer.
+- **Rationale:** `supabase start` spawns Docker containers, so the devcontainer itself needs Docker access. Docker-in-Docker is the standard devcontainer approach for this.
+
+### 3. Auth email confirmations disabled locally
+- **Decision:** `enable_confirmations = false` in `supabase/config.toml` for local dev.
+- **Rationale:** Eliminates email verification friction during development. Signup → immediate login. Production Supabase project settings are separate and unaffected.
+
+### 4. Deterministic seed UUIDs
+- **Decision:** Seed data uses readable, deterministic UUIDs (e.g., `11111111-1111-...` for trips).
+- **Rationale:** Makes it easy to reference specific records in tests, API calls, and debugging. No random IDs to look up.
+
+### 5. `.env.local.example` uses standard Supabase local keys
+- **Decision:** Pre-filled the anon key with Supabase's well-known local development JWT.
+- **Rationale:** This key is public and identical for all local Supabase instances. Developers can `cp .env.local.example .env.local` and immediately connect without running `supabase status` first.
+
+---
+
+## Decision: Phase 2 Decomposition — Ordered Work Items
+
+**Prepared by:** Strider (Lead)  
+**Date:** 2026-02-21  
+**Scope:** PRD Phase 2 (M2–M3) features  
+**Status:** Ready for team execution  
+
+### Overview
+
+Phase 2 spans months 2–3 of MVP development. Phase 1 (items 1–10) has completed the foundation: auth, dashboard, trip CRUD, unit system, profile, and shared types.
+
+Phase 2 introduces the **map interface** (M2) and **trip detail rich features** (M3), unlocking the core value proposition: unified route planning, itinerary organization, gear tracking, and real-time conditions.
+
+This decomposition orders 22 work items into **4 parallel work streams** (Pippin + Gimli can work simultaneously):
+- **Stream A:** Map Infrastructure (Pippin + Gimli) — enables downstream features
+- **Stream B:** Itinerary & Day Management (Pippin) — organizes waypoints into a trip schedule
+- **Stream C:** Gear Tracking (Gimli) — manual entry, templates, checklist
+- **Stream D:** Conditions & Export (Pippin + Gimli) — weather, share view, GPX
+
+### Dependency Logic
+
+- Items 1–4 (map setup) block all map-dependent features in B, C, D
+- Item 5 (waypoint management) blocks day assignment (Item 6) and gear visibility in share view
+- Item 6 (day management) can proceed in parallel after item 5
+- Item 7 (share view) needs items 1, 5, 6 complete
+- Gear (items 8–11) proceeds in parallel after item 1 (no direct map dependency)
+- Conditions (item 12) and export (item 13) are independent
+
+### Estimated Effort
+
+- Stream A (map): 6–8 weeks (Mapbox integration is the critical path)
+- Stream B (itinerary): 4–5 weeks (depends on A, but low complexity after waypoints)
+- Stream C (gear): 3–4 weeks (independent of map)
+- Stream D (conditions & export): 2–3 weeks (lighter, no blocker)
+
+### Work Items — Summary
+
+**Stream A: Map Infrastructure & Waypoints (Critical Path)**
+
+1. **Mapbox Integration Setup** (Pippin) — Install Mapbox GL JS, create MapView component, basemap layer, map state in Zustand
+2. **Route Drawing (Polyline Editor)** (Pippin) — Click-to-add vertices, undo, distance/elevation display, route validation
+3. **Elevation Data Service** (Gimli) — Supabase Edge Function querying USGS Elevation API, client-side caching, integration with route/waypoints
+4. **Waypoint Placement & Types** (Pippin) — Click-to-place, type picker, icon markers, drag-to-reposition, elevation auto-population
+5. **Waypoint CRUD** (Gimli) — Add/edit/delete modal, waypoint list, validation, sync to database
+
+**Stream B: Itinerary & Day Management**
+
+6. **Day Management** (Pippin) — Create/rename/reorder/delete days, per-day stats (mileage, elevation), drag-drop reordering
+7. **Waypoint-to-Day Assignment** (Gimli) — Drag-drop waypoints between days, auto-compute day mileage/elevation, visual feedback
+8. **Trip Detail / Share View** (Pippin) — Public read-only page with RLS policy, map, itinerary tab, gear summary, shareable link
+
+**Stream C: Gear Tracking**
+
+9. **Gear List Tab** (Gimli) — Manual CRUD, category enum UI, weight totals (base, worn, total), sorting, validation
+10. **Gear Templates** (Gimli) — Pre-built starter lists (3-season, winter, desert), load into trip, batch insert
+11. **Gear Checklist** (Gimli) — `is_packed` toggle, visual indicator, filter unpacked items, persistent state
+
+**Stream D: Conditions, Export & Polish**
+
+12. **Conditions Tab** (Pippin) — NWS 7-day forecast, caching in database (12-hour TTL), daily cards, unit conversion, error fallback
+13. **Elevation Profile Chart** (Pippin) — Charting library (Recharts), elevation vs. distance, day boundaries, hover tooltip, responsive
+14. **GPX Import** (Gimli) — File picker, parse with gpxparser, validate, import route + waypoints, elevation snap, error handling
+15. **GPX Export** (Gimli) — Build GeoJSON-to-GPX converter, serialize to GPX 1.1, trigger download, metadata inclusion
+16. **Trip Duplication** (Gimli) — Deep clone endpoint copying route, waypoints, days, gear; new UUIDs, reset status
+
+**Cross-Cutting (17–22)**
+
+17. **Unit System Compliance** (Pippin + Gimli) — Audit all Phase 2 features for unit conversion (distance, elevation, weight, temperature)
+18. **Responsive Layout** (Pippin) — Tablet (768–1024px) and desktop testing, collapsible sidebar on portrait, touch gestures
+19. **Database Migrations & RLS** (Gimli) — Phase 2 table expansions, gear_templates, conditions, RLS policies for public share
+20. **Mapbox Error Handling** (Pippin) — Error boundary, fallback UX for invalid token, network failure, timeout
+21. **Store Schema for Phase 2** (Pippin) — Zustand extensions (route, waypoints, days, gearItems, conditions), computed selectors
+22. **Integration Testing** (Pippin + Gimli) — E2E user journeys (sign up → create → draw → share), Vitest + React Testing Library, Cypress/Playwright, >80% coverage
+
+### Risk & Mitigation
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| Mapbox GL Draw complexity / API surface | Medium | High | Spike early (item 1–2); maintain small draw test project. Document gotchas in `.squad/decisions.md` |
+| USGS API rate limits or downtime | Medium | Medium | Implement client-side caching (IndexedDB). Cache in DB with TTL. Have fallback UX if API unavailable. |
+| Drag-and-drop complexity (waypoint-to-day) | Medium | Medium | Use battle-tested library (dnd-kit or react-beautiful-dnd). Spike on mock data early. |
+| Unit conversion bugs across features | Medium | Medium | Centralize all conversions in `utils/unitConversion.ts`. Thorough unit tests. Audit every display in item 17. |
+| NWS API integration complexity | Low | Low | Use simple REST API. Cache aggressively. Error handling is acceptable for MVP. |
+| Scope creep (nice-to-have features leaking in) | High | High | Strider enforces P0/P1 boundaries weekly. Cut any P2 features if behind schedule. Sync with Rob weekly. |
+
+### Recommended Execution Schedule
+
+**Week 1–2:**
+- Pippin: Item 1 (Mapbox setup)
+- Gimli: Item 19 (Database migrations)
+
+**Week 2–5:**
+- Pippin: Item 2 (Route drawing)
+- Gimli: Item 3 (Elevation service) + Item 5 (Waypoint CRUD)
+- Gimli: Item 9 (Gear list in parallel)
+
+**Week 5–8:**
+- Pippin: Item 4 (Waypoint placement) → Item 6 (Day management)
+- Gimli: Item 7 (Waypoint assignment) + Item 10 (Gear templates) + Item 11 (Checklist)
+- Gimli: Item 14 (GPX import) + Item 15 (GPX export)
+
+**Week 8–10:**
+- Pippin: Item 12 (Conditions tab) + Item 13 (Elevation profile)
+- Gimli: Item 16 (Trip duplication) + Item 21 (Store schema refinement)
+
+**Week 10–12:**
+- Pippin: Item 8 (Share view)
+- Both: Item 17 (Unit system audit) + Item 18 (Responsive layout) + Item 22 (Integration testing)
+
+**Exit Criteria (Phase 2 Complete):**
+- All items 1–18 implemented and tested
+- Database migrations applied to staging
+- RLS policies validated
+- All features work with both unit systems
+- Responsive layout tested on tablet
+- Integration tests pass
