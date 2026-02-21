@@ -11,8 +11,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import type { TripStatus } from '@/types'
 
-const FILTER_OPTIONS: { label: string; value: TripStatus | 'all' }[] = [
-  { label: 'All', value: 'all' },
+const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
   { label: 'Draft', value: 'draft' },
   { label: 'Planned', value: 'planned' },
   { label: 'Active', value: 'active' },
@@ -133,11 +132,11 @@ export default function DashboardPage() {
           } w-full shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground sm:w-[280px] lg:flex lg:w-80`}
         >
           {/* Status filters — sticky top */}
-          <div className="flex shrink-0 gap-1 overflow-x-auto border-b p-2">
+          <div className="flex shrink-0 flex-wrap gap-1 border-b p-2">
             {FILTER_OPTIONS.map((opt) => (
               <Button
                 key={opt.value}
-                variant={statusFilter === opt.value ? 'default' : 'outline'}
+                variant={statusFilter.has(opt.value) ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 px-2.5 text-xs"
                 onClick={() => setFilter(opt.value)}

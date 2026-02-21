@@ -101,9 +101,9 @@ interface TripPlannerState {
 interface TripState extends TripPlannerState {
   trips: Trip[]
   isLoading: boolean
-  statusFilter: TripStatus | 'all'
+  statusFilter: Set<TripStatus>
   fetchTrips: (userId: string) => Promise<void>
-  setFilter: (filter: TripStatus | 'all') => void
+  setFilter: (filter: TripStatus) => void
   createTrip: (input: CreateTripInput) => Promise<Trip | null>
   updateTrip: (tripId: string, input: UpdateTripInput) => Promise<Trip | null>
   deleteTrip: (tripId: string) => Promise<boolean>
@@ -113,7 +113,7 @@ interface TripState extends TripPlannerState {
 export const useTripStore = create<TripState>()((set, get) => ({
   trips: [],
   isLoading: false,
-  statusFilter: 'all',
+  statusFilter: new Set<TripStatus>(),
 
   // Phase 2 initial state
   route: null,
@@ -391,7 +391,15 @@ export const useTripStore = create<TripState>()((set, get) => ({
     set({ trips: data ?? [], isLoading: false })
   },
 
-  setFilter: (filter) => set({ statusFilter: filter }),
+  setFilter: (filter) => set((state) => {
+    const next = new Set(state.statusFilter)
+    if (next.has(filter)) {
+      next.delete(filter)
+    } else {
+      next.add(filter)
+    }
+    return { statusFilter: next }
+  }),
 
   createTrip: async (input: CreateTripInput) => {
     const { data, error } = await apiCreateTrip(input)
@@ -458,8 +466,8 @@ export const useTripStore = create<TripState>()((set, get) => ({
 export function useFilteredTrips(): Trip[] {
   const trips = useTripStore((s) => s.trips)
   const filter = useTripStore((s) => s.statusFilter)
-  if (filter === 'all') return trips
-  return trips.filter((t) => t.status === filter)
+  if (filter.size === 0) return trips
+  return trips.filter((t) => filter.has(t.status))
 }
 
 // ── Phase 2 Selectors ──────────────────────────────────────

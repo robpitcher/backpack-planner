@@ -61,7 +61,7 @@ describe('tripStore — Local State Management', () => {
       gearItems: [],
       route: null,
       conditions: null,
-      statusFilter: 'all',
+      statusFilter: new Set(),
       isLoading: false,
       gearError: null,
       gearTemplates: [],
@@ -76,10 +76,12 @@ describe('tripStore — Local State Management', () => {
       expect(trips).toEqual([])
     })
 
-    it('setFilter updates statusFilter', () => {
+    it('setFilter toggles statusFilter', () => {
       const { setFilter } = useTripStore.getState()
       setFilter('active')
-      expect(useTripStore.getState().statusFilter).toBe('active')
+      expect(useTripStore.getState().statusFilter).toEqual(new Set(['active']))
+      setFilter('active')
+      expect(useTripStore.getState().statusFilter).toEqual(new Set())
     })
   })
 
@@ -321,7 +323,7 @@ describe('tripStore — Selectors', () => {
       gearItems: [],
       route: null,
       conditions: null,
-      statusFilter: 'all',
+      statusFilter: new Set(),
       isLoading: false,
       gearError: null,
       gearTemplates: [],
@@ -356,11 +358,11 @@ describe('tripStore — Selectors', () => {
           is_public: false,
         },
       ]
-      useTripStore.setState({ trips, statusFilter: 'all' })
+      useTripStore.setState({ trips, statusFilter: new Set() })
       
       // Access state directly instead of calling the hook
       const state = useTripStore.getState()
-      const filtered = state.statusFilter === 'all' ? state.trips : state.trips.filter(t => t.status === state.statusFilter)
+      const filtered = state.statusFilter.size === 0 ? state.trips : state.trips.filter(t => state.statusFilter.has(t.status))
       expect(filtered).toHaveLength(2)
     })
 
@@ -389,11 +391,11 @@ describe('tripStore — Selectors', () => {
           is_public: false,
         },
       ]
-      useTripStore.setState({ trips, statusFilter: 'active' })
+      useTripStore.setState({ trips, statusFilter: new Set(['active']) })
       
       // Access state directly instead of calling the hook
       const state = useTripStore.getState()
-      const filtered = state.statusFilter === 'all' ? state.trips : state.trips.filter(t => t.status === state.statusFilter)
+      const filtered = state.statusFilter.size === 0 ? state.trips : state.trips.filter(t => state.statusFilter.has(t.status))
       expect(filtered).toHaveLength(1)
       expect(filtered[0].status).toBe('active')
     })
