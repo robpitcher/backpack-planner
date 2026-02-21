@@ -81,3 +81,17 @@
 - **Dashboard header:** Added header bar to DashboardPage with TrailForge branding, profile settings link, user email display, and sign-out button.
 - **Toaster:** Added `<Toaster />` (sonner) to App.tsx for app-wide toast notifications.
 - **shadcn components installed:** select, switch, separator, sonner (added to existing button, input, card, label).
+
+### WI#10 — Trip CRUD UI (Create, Rename, Delete, Archive)
+- **Trip store extended:** `src/stores/tripStore.ts` — Added `createTrip`, `updateTrip`, `deleteTrip`, `archiveTrip` actions. All call API functions and update local state. `updateTrip`, `deleteTrip`, and `archiveTrip` use optimistic updates with rollback on failure.
+- **CreateTripDialog:** `src/components/CreateTripDialog.tsx` — Modal dialog (shadcn Dialog) with title (required), description, start_date, end_date fields. On success, navigates to `/trip/:newTripId/plan`. Resets form on close.
+- **RenameTripDialog:** `src/components/RenameTripDialog.tsx` — Small dialog for renaming a trip title. Uses optimistic `updateTrip` store action.
+- **DeleteTripDialog:** `src/components/DeleteTripDialog.tsx` — AlertDialog with destructive confirmation. Shows trip title in prompt. Uses optimistic `deleteTrip` store action.
+- **TripCard actions menu:** Updated `src/components/TripCard.tsx` — Added kebab (⋮) DropdownMenu with Rename, Archive (hidden when already completed), and Delete options. Menu click stops event propagation to prevent card navigation. Dialogs rendered outside Card to avoid z-index issues.
+- **DashboardPage updated:** `src/pages/DashboardPage.tsx` — "Create Trip" button now opens CreateTripDialog instead of navigating to /trip/new/plan. Removed unused `useNavigate` import.
+- **shadcn components installed:** dialog, dropdown-menu, alert-dialog.
+- **Design decisions:**
+  - Optimistic UI for all mutations — update store immediately, rollback on API failure.
+  - Archive option hidden on already-completed trips (no-op would confuse users).
+  - `e.stopPropagation()` on menu trigger and content to prevent card click-through.
+  - Toast notifications via sonner for all CRUD success/failure feedback.

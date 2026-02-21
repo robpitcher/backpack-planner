@@ -387,3 +387,51 @@ Rob requested decomposition of the TrailForge PRD into concrete, actionable work
 - `src/pages/auth/callback.tsx` (/auth/callback route)
 - `src/stores/auth.ts` (Zustand store)
 - `src/hooks/use-auth.ts` (auth store hook)
+
+---
+
+## Decision: Trip CRUD UI — Pippin (Work Item #10)
+
+**Author:** Pippin (Frontend Dev)  
+**Date:** 2026-02-21  
+**Status:** Implemented  
+**Scope:** Create/rename/delete/archive trip UI with optimistic updates
+
+### Key Architectural Decisions
+
+1. **Create Trip via Dialog, not page navigation**
+   - Decision: "Create Trip" opens a modal Dialog on the dashboard instead of navigating to `/trip/new/plan`
+   - Rationale: Keeps users in context, avoids a blank planner page for a trip that doesn't exist yet. On success, navigates to the new trip's planner.
+
+2. **Optimistic updates with rollback**
+   - Decision: All store mutations (update, delete, archive) apply changes immediately and roll back on API failure
+   - Rationale: Keeps the UI snappy. Rollback ensures consistency if the API call fails.
+
+3. **Card actions via kebab DropdownMenu**
+   - Decision: Each TripCard has a "⋮" button that opens a DropdownMenu with Rename, Archive, Delete
+   - Rationale: Standard pattern for card-level actions. `stopPropagation` prevents the menu from triggering card navigation.
+
+4. **Delete uses AlertDialog, not DropdownMenu confirm**
+   - Decision: Delete triggers a separate AlertDialog for confirmation rather than an inline confirm
+   - Rationale: Destructive actions warrant a dedicated confirmation step with clear messaging about irreversibility.
+
+### Components Implemented
+
+- **CreateTripDialog** — Modal dialog with title, description, start/end dates; navigates to trip planner on success
+- **RenameTripDialog** — Small dialog for inline trip title editing
+- **DeleteTripDialog** — AlertDialog with destructive confirmation
+- **TripCard enhanced** — Kebab menu with Rename, Archive (hidden if completed), Delete; dialogs rendered outside Card
+- **TripStore extended** — Added `createTrip`, `updateTrip`, `deleteTrip`, `archiveTrip` actions with optimistic updates
+- **DashboardPage updated** — "Create Trip" button opens CreateTripDialog
+
+### Files Created/Modified
+
+- `src/components/CreateTripDialog.tsx` (new)
+- `src/components/RenameTripDialog.tsx` (new)
+- `src/components/DeleteTripDialog.tsx` (new)
+- `src/components/TripCard.tsx` (enhanced with kebab menu)
+- `src/stores/tripStore.ts` (extended with CRUD actions)
+- `src/pages/DashboardPage.tsx` (button handler updated)
+- `src/components/ui/dialog.tsx` (shadcn component)
+- `src/components/ui/dropdown-menu.tsx` (shadcn component)
+- `src/components/ui/alert-dialog.tsx` (shadcn component)
