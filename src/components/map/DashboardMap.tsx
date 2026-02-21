@@ -212,14 +212,6 @@ export default function DashboardMap({
       })
 
       routeLayerRef.current = tripId
-
-      // Zoom to fit the route bounds
-      const coords = geojson.geometry.coordinates
-      const bounds = new maplibregl.LngLatBounds()
-      for (const [lng, lat] of coords) {
-        bounds.extend([lng, lat])
-      }
-      map.fitBounds(bounds, { padding: 80, duration: 800 })
     },
     [trips, mapReady, centroids],
   )
@@ -244,7 +236,7 @@ export default function DashboardMap({
     })
   }, [selectedTripId])
 
-  // Manage waypoint markers
+  // Manage waypoint markers and fit bounds to route + waypoints
   useEffect(() => {
     if (!mapReady || !mapRef.current) return
 
@@ -277,7 +269,32 @@ export default function DashboardMap({
         existing.set(wp.id, marker)
       }
     }
-  }, [mapReady, waypoints])
+
+    // Fit bounds to route + waypoints when a trip is selected
+    if (selectedTripId && routeLayerRef.current === selectedTripId) {
+      const trip = trips.find((t) => t.id === selectedTripId)
+      const geojson = trip?.route_geojson as {
+        geometry?: { coordinates?: number[][] }
+      }
+      const routeCoords = geojson?.geometry?.coordinates || []
+
+      if (routeCoords.length > 0 || waypoints.length > 0) {
+        const bounds = new maplibregl.LngLatBounds()
+
+        // Include route coordinates
+        for (const [lng, lat] of routeCoords) {
+          bounds.extend([lng, lat])
+        }
+
+        // Include waypoint coordinates
+        for (const wp of waypoints) {
+          bounds.extend([wp.lng, wp.lat])
+        }
+
+        map.fitBounds(bounds, { padding: 80, duration: 800 })
+      }
+    }
+  }, [mapReady, waypoints, selectedTripId, trips])
 
   if (error) {
     return (
