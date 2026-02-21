@@ -2,7 +2,8 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Loader2, AlertTriangle } from 'lucide-react'
-import type { Trip } from '@/types'
+import type { Trip, Waypoint } from '@/types'
+import { fetchWaypoints } from '@/lib/api/waypoints'
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
@@ -44,10 +45,12 @@ export default function DashboardMap({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const waypointMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const routeLayerRef = useRef<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapReady, setMapReady] = useState(false)
+  const [waypoints, setWaypoints] = useState<Waypoint[]>([])
 
   // Compute centroids
   const centroids: TripCentroid[] = trips
@@ -85,6 +88,7 @@ export default function DashboardMap({
 
     return () => {
       markersRef.current.clear()
+      waypointMarkersRef.current.clear()
       mapRef.current = null
       map.remove()
     }
@@ -157,7 +161,7 @@ export default function DashboardMap({
     }
   }, [highlightedTripId, selectedTripId])
 
-  // Draw selected trip route
+  // Draw selected trip route and zoom to it
   const drawRoute = useCallback(
     (tripId: string | null) => {
       const map = mapRef.current
@@ -170,7 +174,17 @@ export default function DashboardMap({
         routeLayerRef.current = null
       }
 
-      if (!tripId) return
+      if (!tripId) {
+        // Zoom back out to fit all trip centroids
+        if (centroids.length > 0) {
+          const bounds = new maplibregl.LngLatBounds()
+          for (const c of centroids) {
+            bounds.extend([c.lng, c.lat])
+          }
+          map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 })
+        }
+        return
+      }
 
       const trip = trips.find((t) => t.id === tripId)
       if (!trip?.route_geojson) return
@@ -198,13 +212,72 @@ export default function DashboardMap({
       })
 
       routeLayerRef.current = tripId
+
+      // Zoom to fit the route bounds
+      const coords = geojson.geometry.coordinates
+      const bounds = new maplibregl.LngLatBounds()
+      for (const [lng, lat] of coords) {
+        bounds.extend([lng, lat])
+      }
+      map.fitBounds(bounds, { padding: 80, duration: 800 })
     },
-    [trips, mapReady],
+    [trips, mapReady, centroids],
   )
 
   useEffect(() => {
     drawRoute(selectedTripId)
   }, [selectedTripId, drawRoute])
+
+  // Fetch and display waypoints for selected trip
+  useEffect(() => {
+    if (!selectedTripId) {
+      setWaypoints([])
+      return
+    }
+
+    fetchWaypoints(selectedTripId).then(({ data, error }) => {
+      if (error) {
+        console.error('Failed to fetch waypoints:', error.message)
+        return
+      }
+      setWaypoints(data ?? [])
+    })
+  }, [selectedTripId])
+
+  // Manage waypoint markers
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return
+
+    const map = mapRef.current
+    const existing = waypointMarkersRef.current
+
+    // Remove old waypoint markers not in current waypoints
+    const currentIds = new Set(waypoints.map((w) => w.id))
+    for (const [id, marker] of existing) {
+      if (!currentIds.has(id)) {
+        marker.remove()
+        existing.delete(id)
+      }
+    }
+
+    // Add/update waypoint markers
+    for (const wp of waypoints) {
+      if (existing.has(wp.id)) {
+        existing.get(wp.id)!.setLngLat([wp.lng, wp.lat])
+      } else {
+        const el = document.createElement('div')
+        el.className = 'dashboard-waypoint-marker'
+        el.style.cssText =
+          'width:8px;height:8px;border-radius:50%;background:#D97706;border:1.5px solid white;cursor:default;box-shadow:0 1px 2px rgba(0,0,0,0.3);'
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([wp.lng, wp.lat])
+          .addTo(map)
+
+        existing.set(wp.id, marker)
+      }
+    }
+  }, [mapReady, waypoints])
 
   if (error) {
     return (
