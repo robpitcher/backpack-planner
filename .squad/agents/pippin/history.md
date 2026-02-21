@@ -96,6 +96,11 @@
   - `e.stopPropagation()` on menu trigger and content to prevent card click-through.
   - Toast notifications via sonner for all CRUD success/failure feedback.
 
+### Settings Page Audit (WI#10 revisit)
+- **ProfilePage already complete:** All settings requirements (unit toggle, display name, avatar URL, skill level, save with sonner toasts) were already implemented in WI#5.
+- **Consistency fix:** Added `AppHeader` to ProfilePage — previously used an ad-hoc "← Back" button, now uses the shared header matching DashboardPage layout. Removed unused `useNavigate` import.
+- **Layout pattern:** All authenticated pages should wrap content in `<div className="min-h-screen bg-background">` with `<AppHeader />` at the top and `<main>` for content. This is the established pattern.
+
 ## 🎉 Phase 1 Complete (10/10 Items)
 
 **Date:** 2026-02-21  
