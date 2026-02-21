@@ -69,10 +69,14 @@ export default function DashboardPage() {
 
   const handleMarkerClick = useCallback(
     (tripId: string) => {
-      setSelectedTripId(tripId)
+      setSelectedTripId((prev) => (prev === tripId ? null : tripId))
     },
     [],
   )
+
+  const handleMapBackgroundClick = useCallback(() => {
+    setSelectedTripId(null)
+  }, [])
 
   return (
     <div className="flex h-screen min-h-0 w-full flex-col">
@@ -195,6 +199,7 @@ export default function DashboardPage() {
             highlightedTripId={highlightedTripId}
             onMarkerClick={handleMarkerClick}
             onMarkerHover={setHighlightedTripId}
+            onMapClick={handleMapBackgroundClick}
           />
         </div>
       </div>

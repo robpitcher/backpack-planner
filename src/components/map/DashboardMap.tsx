@@ -33,6 +33,7 @@ interface DashboardMapProps {
   highlightedTripId: string | null
   onMarkerClick?: (tripId: string) => void
   onMarkerHover?: (tripId: string | null) => void
+  onMapClick?: () => void
 }
 
 export default function DashboardMap({
@@ -41,17 +42,23 @@ export default function DashboardMap({
   highlightedTripId,
   onMarkerClick,
   onMarkerHover,
+  onMapClick,
 }: DashboardMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const waypointMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const routeLayerRef = useRef<string | null>(null)
+  const onMapClickRef = useRef(onMapClick)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [waypoints, setWaypoints] = useState<Waypoint[]>([])
 
+  // Keep callback ref current without re-creating map
+  useEffect(() => {
+    onMapClickRef.current = onMapClick
+  }, [onMapClick])
   // Compute centroids
   const centroids: TripCentroid[] = trips
     .map((t) => {
@@ -82,6 +89,10 @@ export default function DashboardMap({
     map.on('error', (e) => {
       setError(e.error?.message ?? 'Map failed to load.')
       setIsLoading(false)
+    })
+
+    map.on('click', () => {
+      onMapClickRef.current?.()
     })
 
     mapRef.current = map
