@@ -123,7 +123,7 @@ export default function WaypointList({
         <DeleteWaypointDialog
           waypointId={deleteWaypoint.id}
           waypointName={deleteWaypoint.name}
-          open={!!deleteWaypoint}
+          open={true}
           onOpenChange={(open) => { if (!open) setDeleteWaypoint(null) }}
         />
       )}
