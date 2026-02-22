@@ -10,3 +10,14 @@
 
 ## Learnings
 
+- **Azure Static Web Apps (Free tier)** is the right hosting choice for this pure SPA. No server-side code, so App Service would be overprovisioned. SWA gives free SSL, CDN, SPA routing, and native GitHub Actions deploy.
+- **OIDC with User-Assigned Managed Identity** is the preferred GitHub Actions → Azure auth method. Federated credential scoped to `repo:*:ref:refs/heads/dev`. No secrets to rotate.
+- **Google OAuth flows through Supabase Auth**, not directly to the frontend. Redirect URI in Google Console points to Supabase (`/auth/v1/callback`). Google secrets live only in Supabase Dashboard.
+- **No Key Vault needed for MVP** — all frontend env vars are public client-side values, and Google OAuth secrets are stored in Supabase's managed config, not Azure.
+- **SPA routing** requires `public/staticwebapp.config.json` with `navigationFallback` rewrite to `index.html`.
+- **Env vars used in build:** Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Both are public (anon key is safe by Supabase's RLS design).
+- **Bicep structure:** `infra/main.bicep` at subscription scope → modules for RG, SWA, UAMI. Parameter file `main.bicepparam` for dev values.
+- **Auth callback route:** App uses `/auth/callback` (handled by `AuthCallbackPage.tsx`). This path must be in Supabase redirect URLs config.
+- **Supabase local config** is in `supabase/config.toml`. Google OAuth is disabled locally (`enabled = false`). Site URL is `http://localhost:5173`.
+- **Entire MVP deployment can run at $0/month** using free tiers across Azure SWA, Supabase, GitHub Actions, and Google OAuth.
+
