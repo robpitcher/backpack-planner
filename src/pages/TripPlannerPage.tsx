@@ -126,19 +126,19 @@ export default function TripPlannerPage() {
               </h2>
             </div>
             <TabsList className="mx-2 mt-2 flex h-auto w-auto shrink-0 flex-wrap gap-1">
-              <TabsTrigger value="map" className="text-xs px-2 py-1">
+              <TabsTrigger value="map" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
                 <Map className="mr-1 h-3.5 w-3.5" />
                 Map
               </TabsTrigger>
-              <TabsTrigger value="gear" className="text-xs px-2 py-1">
+              <TabsTrigger value="gear" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
                 <Backpack className="mr-1 h-3.5 w-3.5" />
                 Gear
               </TabsTrigger>
-              <TabsTrigger value="itinerary" className="text-xs px-2 py-1">
+              <TabsTrigger value="itinerary" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
                 <CalendarDays className="mr-1 h-3.5 w-3.5" />
                 Itinerary
               </TabsTrigger>
-              <TabsTrigger value="conditions" className="text-xs px-2 py-1">
+              <TabsTrigger value="conditions" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
                 <CloudSun className="mr-1 h-3.5 w-3.5" />
                 Conditions
               </TabsTrigger>
