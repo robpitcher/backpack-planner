@@ -201,7 +201,7 @@ export default function TripPlannerPage() {
         >
           {/* Logo */}
           <div className="flex justify-center border-b px-3 py-3">
-            <img src="/logo.png" alt="TrailForge" className="h-38 w-auto opacity-100" />
+            <img src="/logo.png" alt="TrailForge" className="h-32 w-auto opacity-100" />
           </div>
 
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
