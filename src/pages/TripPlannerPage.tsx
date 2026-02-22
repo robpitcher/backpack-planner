@@ -1,11 +1,12 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft, UserCircle, Pencil } from 'lucide-react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
 import ElevationProfile from '@/components/map/ElevationProfile'
+import Breadcrumb from '@/components/Breadcrumb'
 import WaypointList from '@/components/sidebar/WaypointList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -29,7 +30,6 @@ import type { Waypoint } from '@/types'
 
 export default function TripPlannerPage() {
   const { tripId } = useParams()
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const mapRef = useRef<MapViewHandle>(null)
   const waypoints = useTripStore((s) => s.waypoints)
@@ -84,47 +84,32 @@ export default function TripPlannerPage() {
     }
   }, [pendingWaypointId, waypoints, setSearchParams])
 
+  const resetMapView = useCallback(() => {
+    setSelectedWaypointId(null)
+    const map = mapRef.current?.getMap() ?? null
+    if (map && waypoints.length > 0) {
+      const bounds = new maplibregl.LngLatBounds()
+      waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+      if (route) {
+        const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
+        coords?.forEach((c) => bounds.extend(c as [number, number]))
+      }
+      map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+    }
+  }, [waypoints, route])
+
   const handleWaypointSelect = useCallback(
     (waypoint: Waypoint) => {
-      const map = mapRef.current?.getMap() ?? null
       if (selectedWaypointId === waypoint.id) {
-        // Deselect and zoom out to fit all waypoints + route
-        setSelectedWaypointId(null)
-        if (map && waypoints.length > 0) {
-          const bounds = new maplibregl.LngLatBounds()
-          waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
-          if (route) {
-            const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
-            coords?.forEach((c) => bounds.extend(c as [number, number]))
-          }
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
-        }
+        resetMapView()
       } else {
         setSelectedWaypointId(waypoint.id)
+        const map = mapRef.current?.getMap() ?? null
         panToWaypoint(map, waypoint)
       }
     },
-    [selectedWaypointId, waypoints, route],
+    [selectedWaypointId, resetMapView],
   )
-
-  const handleBackClick = useCallback(() => {
-    if (selectedWaypointId) {
-      // Deselect waypoint and zoom back to all waypoints
-      setSelectedWaypointId(null)
-      const map = mapRef.current?.getMap() ?? null
-      if (map && waypoints.length > 0) {
-        const bounds = new maplibregl.LngLatBounds()
-        waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
-        if (route) {
-          const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
-          coords?.forEach((c) => bounds.extend(c as [number, number]))
-        }
-        map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
-      }
-    } else {
-      navigate('/dashboard')
-    }
-  }, [selectedWaypointId, waypoints, route, navigate])
 
   const startEditingName = useCallback(() => {
     setEditingName(tripName)
@@ -168,12 +153,10 @@ export default function TripPlannerPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          <button onClick={handleBackClick} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <button onClick={handleBackClick} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
-            Trip Planner
-          </button>
+          <Breadcrumb items={[
+            { label: 'TrailForge', href: '/dashboard' },
+            { label: 'Trip Planner', onClick: resetMapView },
+          ]} />
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
@@ -261,6 +244,7 @@ export default function TripPlannerPage() {
                 waypoints={waypoints}
                 selectedWaypointId={selectedWaypointId}
                 onSelect={handleWaypointSelect}
+                onDeselect={resetMapView}
               />
             </TabsContent>
 

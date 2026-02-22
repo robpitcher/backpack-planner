@@ -17,12 +17,14 @@ interface WaypointListProps {
   waypoints: Waypoint[]
   selectedWaypointId?: string | null
   onSelect: (waypoint: Waypoint) => void
+  onDeselect?: () => void
 }
 
 export default function WaypointList({
   waypoints,
   selectedWaypointId,
   onSelect,
+  onDeselect,
 }: WaypointListProps) {
   const [editWaypoint, setEditWaypoint] = useState<Waypoint | null>(null)
   const [deleteWaypoint, setDeleteWaypoint] = useState<Waypoint | null>(null)
@@ -37,7 +39,7 @@ export default function WaypointList({
 
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex min-h-full flex-col">
         <div className="border-b px-3 py-2">
           <h3 className="text-sm font-semibold text-foreground">
             Waypoints ({waypoints.length})
@@ -109,6 +111,8 @@ export default function WaypointList({
             )
           })}
         </ul>
+        {/* Blank area — click to deselect waypoint */}
+        <div className="flex-1" onClick={() => onDeselect?.()} />
       </div>
 
       {editWaypoint && (

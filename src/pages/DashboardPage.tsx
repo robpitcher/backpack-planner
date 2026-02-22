@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, ArrowLeft } from 'lucide-react'
+import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
 import TripListItem from '@/components/TripListItem'
 import DashboardMap from '@/components/map/DashboardMap'
+import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import type { TripStatus } from '@/types'
@@ -121,20 +122,7 @@ export default function DashboardPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          {selectedTripId && (
-            <button onClick={() => setSelectedTripId(null)} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-          )}
-          {selectedTripId ? (
-            <button onClick={() => setSelectedTripId(null)} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
-              TrailForge
-            </button>
-          ) : (
-            <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
-              TrailForge
-            </Link>
-          )}
+          <Breadcrumb items={[{ label: 'TrailForge', onClick: () => setSelectedTripId(null) }]} />
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
