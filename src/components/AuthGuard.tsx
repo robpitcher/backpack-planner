@@ -1,16 +1,8 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import LoginModal from '@/components/LoginModal'
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuthStore()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!isLoading && !session) {
-      navigate('/login', { replace: true })
-    }
-  }, [isLoading, session, navigate])
 
   if (isLoading) {
     return (
@@ -20,9 +12,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!session) {
-    return null
-  }
-
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <LoginModal open={!session} />
+    </>
+  )
 }
