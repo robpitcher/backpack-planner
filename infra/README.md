@@ -8,10 +8,10 @@ Azure Static Web Apps (Free tier) with OIDC-based GitHub Actions deployment.
 |----------|---------|------|
 | Resource Group (`rg-trailforge-dev`) | Container for all resources | $0 |
 | Static Web App (`swa-trailforge-dev`) | Hosts the SPA | $0 (Free tier) |
-| User-Assigned Managed Identity | OIDC auth for GitHub Actions | $0 |
-| Federated Identity Credential | Links GitHub → Azure without secrets | $0 |
+| User-Assigned Managed Identity (external) | OIDC auth for GitHub Actions | $0 (provisioned outside this Bicep template) |
+| Federated Identity Credential (external) | Links GitHub → Azure without secrets | $0 (provisioned outside this Bicep template) |
 
-Supabase is hosted externally (cloud free tier) — not managed by this IaC.
+Supabase and identity resources are hosted/provisioned externally — not managed by this IaC.
 
 ## Prerequisites
 
