@@ -32,3 +32,13 @@
 - Issue #5 (PR #16): waypoint context menu — merged
 
 All three frontend issues completed and orchestrated by Scribe. Decisions moved from inbox to decisions.md.
+
+## Session: Breadcrumb Revision (PR #17)
+
+**Focus:** Revise breadcrumb per Rob's spec at `specs/breadcrumb.md`.
+
+- **Breadcrumb.tsx**: Updated to allow last item to be clickable (onClick or href) while keeping aria-current="page". Previously last item was always a plain span.
+- **DashboardPage.tsx**: Removed ArrowLeft back button; TrailForge breadcrumb is now clickable (onClick deselects trip).
+- **TripPlannerPage.tsx**: Breadcrumb simplified to `TrailForge → Trip Planner` — removed trip name and waypoint-level segments. Extracted `resetMapView` callback (deselects waypoint + fitBounds) shared by breadcrumb click and waypoint toggle.
+- **WaypointList.tsx**: Added `onDeselect` prop + flex-1 spacer div below waypoint list; clicking blank area deselects waypoint and resets map.
+- Pattern: `resetMapView` extracts the deselect+fitBounds logic for reuse across breadcrumb, waypoint toggle, and sidebar blank-click.
