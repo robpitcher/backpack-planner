@@ -28,4 +28,4 @@ supabase/.temp/
 *.sw?
 
 # Squad AI team state (local-only)
-.squad/
+# .squad/
