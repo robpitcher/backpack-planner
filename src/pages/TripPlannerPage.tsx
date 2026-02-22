@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil } from 'lucide-react'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil, Github } from 'lucide-react'
 import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
@@ -167,6 +167,11 @@ export default function TripPlannerPage() {
               <ShareToggle tripId={tripId} isPublic={isPublic} />
             </>
           )}
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -192,6 +197,11 @@ export default function TripPlannerPage() {
             sidebarOpen ? 'flex' : 'hidden'
           } w-full shrink-0 flex-col border-r bg-background sm:w-72 md:w-80 lg:flex lg:w-80`}
         >
+          {/* Logo */}
+          <div className="flex justify-center border-b px-3 py-3">
+            <img src="/logo.png" alt="TrailForge" className="h-38 w-auto opacity-100" />
+          </div>
+
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
             <div className="shrink-0 border-b px-3 pb-2 pt-3">
               {isEditingName ? (

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -125,6 +125,11 @@ export default function DashboardPage() {
           <Breadcrumb items={[{ label: 'TrailForge', onClick: () => setSelectedTripId(null) }]} />
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -150,6 +155,11 @@ export default function DashboardPage() {
             sidebarOpen ? 'flex' : 'hidden'
           } w-full shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground sm:w-[280px] lg:flex lg:w-80`}
         >
+          {/* Logo */}
+          <div className="flex justify-center border-b px-3 py-3">
+            <img src="/logo.png" alt="TrailForge" className="h-38 w-auto opacity-100" />
+          </div>
+
           {/* Sidebar header */}
           <div className="shrink-0 border-b px-3 pb-2 pt-3">
             <h2 className="text-base font-bold tracking-wide">Trips</h2>

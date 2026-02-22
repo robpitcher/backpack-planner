@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LogOut, UserCircle } from 'lucide-react'
+import { Github, LogOut, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -21,6 +21,12 @@ export default function AppHeader() {
               {user.email}
             </span>
           )}
+
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
 
           <ThemeToggle />
 
