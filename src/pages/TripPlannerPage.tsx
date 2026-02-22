@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil } from 'lucide-react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil, Github } from 'lucide-react'
 import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
@@ -23,6 +23,7 @@ import GPXImportButton from '@/components/map/GPXImportButton'
 import GPXExportButton from '@/components/map/GPXExportButton'
 import ShareToggle from '@/components/ShareToggle'
 import ThemeToggle from '@/components/ThemeToggle'
+import ProfileModal from '@/components/ProfileModal'
 import { useTripStore } from '@/stores/tripStore'
 import { useAuthStore } from '@/stores/authStore'
 import { getTrip } from '@/lib/api/trips'
@@ -42,6 +43,7 @@ export default function TripPlannerPage() {
   const [tripName, setTripName] = useState<string>(currentTrip?.title ?? '')
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null)
   const [isEditingName, setIsEditingName] = useState(false)
   const [editingName, setEditingName] = useState('')
@@ -167,6 +169,11 @@ export default function TripPlannerPage() {
               <ShareToggle tripId={tripId} isPublic={isPublic} />
             </>
           )}
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -175,8 +182,8 @@ export default function TripPlannerPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/profile">Profile</Link>
+              <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -192,6 +199,11 @@ export default function TripPlannerPage() {
             sidebarOpen ? 'flex' : 'hidden'
           } w-full shrink-0 flex-col border-r bg-background sm:w-72 md:w-80 lg:flex lg:w-80`}
         >
+          {/* Logo */}
+          <div className="flex justify-center border-b px-3 py-3">
+            <img src="/logo.png" alt="TrailForge" className="h-32 w-auto opacity-100" />
+          </div>
+
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
             <div className="shrink-0 border-b px-3 pb-2 pt-3">
               {isEditingName ? (
@@ -299,6 +311,8 @@ export default function TripPlannerPage() {
           />
         </div>
       </div>
+
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   )
 }

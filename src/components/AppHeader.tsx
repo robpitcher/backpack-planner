@@ -1,16 +1,20 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { LogOut, UserCircle } from 'lucide-react'
+import { Github, LogOut, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 import ThemeToggle from '@/components/ThemeToggle'
+import ProfileModal from '@/components/ProfileModal'
 
 export default function AppHeader() {
   const { user, logout } = useAuthStore()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/dashboard" className="text-xl font-bold tracking-tight">
+        <Link to="/dashboard" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <img src="/logo.png" alt="TrailForge" className="h-8 w-8" />
           TrailForge
         </Link>
 
@@ -21,12 +25,16 @@ export default function AppHeader() {
             </span>
           )}
 
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
+
           <ThemeToggle />
 
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/profile" aria-label="Profile">
-              <UserCircle className="h-5 w-5" />
-            </Link>
+          <Button variant="ghost" size="icon" onClick={() => setProfileOpen(true)} aria-label="Profile">
+            <UserCircle className="h-5 w-5" />
           </Button>
 
           <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out">
@@ -34,6 +42,8 @@ export default function AppHeader() {
           </Button>
         </div>
       </div>
+
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   )
 }
