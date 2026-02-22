@@ -338,6 +338,9 @@ function ReadOnlyMap({
     mapRef.current = map
 
     return () => {
+      // Explicitly remove any waypoint markers before removing the map instance
+      waypointMarkersRef.current.forEach((marker) => marker.remove())
+      waypointMarkersRef.current = []
       mapRef.current = null
       map.remove()
     }
