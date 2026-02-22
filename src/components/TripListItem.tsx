@@ -161,7 +161,7 @@ export default function TripListItem({
               {formatDistance(distance, units)}
             </span>
           )}
-          {trip.route_geojson && !distance && (
+          {trip.route_geojson && distance == null && (
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3 shrink-0" />
               Route
@@ -180,12 +180,7 @@ export default function TripListItem({
         tripId={trip.id}
         tripTitle={trip.title}
         open={deleteOpen}
-        onOpenChange={(v) => {
-          setDeleteOpen(v)
-          if (!v && onDelete) {
-            // Check if trip was deleted (dialog closed after successful delete)
-          }
-        }}
+        onOpenChange={setDeleteOpen}
         onDeleted={() => onDelete?.(trip.id)}
       />
     </>

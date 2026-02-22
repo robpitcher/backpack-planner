@@ -196,7 +196,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: 
 
     map.on('error', (e) => {
       const msg =
-        e.error?.message ?? 'Map failed to load. Check your token and network.'
+        e.error?.message ?? 'Map failed to load. Check your network connection.'
       setError(msg)
       setIsLoading(false)
     })
