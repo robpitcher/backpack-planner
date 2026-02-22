@@ -42,3 +42,16 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - **TripPlannerPage.tsx**: Breadcrumb simplified to `TrailForge → Trip Planner` — removed trip name and waypoint-level segments. Extracted `resetMapView` callback (deselects waypoint + fitBounds) shared by breadcrumb click and waypoint toggle.
 - **WaypointList.tsx**: Added `onDeselect` prop + flex-1 spacer div below waypoint list; clicking blank area deselects waypoint and resets map.
 - Pattern: `resetMapView` extracts the deselect+fitBounds logic for reuse across breadcrumb, waypoint toggle, and sidebar blank-click.
+
+## Session: Adventure Themes (PR #22)
+
+**Focus:** Issue #12 — Add 3 adventure-themed color schemes to theme dropdown.
+
+- Theme type extended: `'dark' | 'light' | 'system' | 'deep-forest' | 'dusk-ridge' | 'canopy'`
+- Adventure themes are dark-based: `applyTheme()` adds both `dark` and theme-specific class to `<html>` so `dark:` Tailwind utilities keep working.
+- CSS variables use OKLCH color space matching existing pattern in `src/index.css`.
+- `applyTheme()` now cleans up all theme classes before applying — uses `ADVENTURE_THEMES` const array for DRY removal.
+- ThemeToggle dropdown uses `DropdownMenuSeparator` to visually separate standard (Light/Dark/System) from adventure themes.
+- Lucide icons for adventure themes: Trees (Deep Forest), Sunset (Dusk on the Ridge), Leaf (Canopy).
+- Hex-to-OKLCH conversion done via manual matrix math in Node.js (no external deps needed).
+- Each theme maps 8 spec colors → 30+ CSS variables by deriving muted/accent/sidebar/chart variants from the palette.
