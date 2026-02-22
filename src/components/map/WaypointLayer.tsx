@@ -57,7 +57,7 @@ export default function WaypointLayer({
           initialFitDone.current = true
           const bounds = new maplibregl.LngLatBounds()
           data.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 800 })
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
         }
       }
     })
@@ -349,6 +349,6 @@ export function panToWaypoint(
   map.flyTo({
     center: [waypoint.lng, waypoint.lat],
     zoom: Math.max(map.getZoom(), 13),
-    duration: 800,
+    duration: 1200,
   })
 }

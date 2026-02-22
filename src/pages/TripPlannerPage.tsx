@@ -84,7 +84,7 @@ export default function TripPlannerPage() {
             const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
             coords?.forEach((c) => bounds.extend(c as [number, number]))
           }
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 800 })
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
         }
       } else {
         setSelectedWaypointId(waypoint.id)

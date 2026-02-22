@@ -58,6 +58,7 @@ export default function DashboardMap({
   const [error, setError] = useState<string | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [waypoints, setWaypoints] = useState<Waypoint[]>([])
+  const [allWaypoints, setAllWaypoints] = useState<Waypoint[]>([])
 
   // Keep callback refs current without re-creating markers
   useEffect(() => {
@@ -160,16 +161,19 @@ export default function DashboardMap({
       }
     }
 
-    // Fit bounds to all markers
-    if (centroids.length > 0) {
-      const bounds = new maplibregl.LngLatBounds()
-      for (const c of centroids) {
-        bounds.extend([c.lng, c.lat])
-      }
-      map.fitBounds(bounds, { padding: 60, maxZoom: 12 })
+    // Fit bounds to all markers + waypoints
+    const bounds = new maplibregl.LngLatBounds()
+    for (const c of centroids) {
+      bounds.extend([c.lng, c.lat])
+    }
+    for (const wp of allWaypoints) {
+      bounds.extend([wp.lng, wp.lat])
+    }
+    if (centroids.length > 0 || allWaypoints.length > 0) {
+      map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 1200 })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, JSON.stringify(centroids.map((c) => [c.tripId, c.lng, c.lat]))])
+  }, [mapReady, JSON.stringify(centroids.map((c) => [c.tripId, c.lng, c.lat])), allWaypoints])
 
   // Highlight marker on hover
   useEffect(() => {
@@ -233,6 +237,21 @@ export default function DashboardMap({
     drawRoute(selectedTripId)
   }, [selectedTripId, drawRoute])
 
+  // Fetch waypoints for all filtered trips
+  useEffect(() => {
+    if (trips.length === 0) {
+      setAllWaypoints([])
+      return
+    }
+    Promise.all(trips.map((t) => fetchWaypoints(t.id))).then((results) => {
+      const all: Waypoint[] = []
+      for (const { data } of results) {
+        if (data) all.push(...data)
+      }
+      setAllWaypoints(all)
+    })
+  }, [trips])
+
   // Fetch and display waypoints for selected trip
   useEffect(() => {
     if (!selectedTripId) {
@@ -250,6 +269,7 @@ export default function DashboardMap({
   }, [selectedTripId])
 
   // Manage waypoint markers and fit bounds to route + waypoints
+  const visibleWaypoints = selectedTripId ? waypoints : allWaypoints
   useEffect(() => {
     if (!mapReady || !mapRef.current) return
 
@@ -257,7 +277,7 @@ export default function DashboardMap({
     const existing = waypointMarkersRef.current
 
     // Remove old waypoint markers not in current waypoints
-    const currentIds = new Set(waypoints.map((w) => w.id))
+    const currentIds = new Set(visibleWaypoints.map((w) => w.id))
     for (const [id, marker] of existing) {
       if (!currentIds.has(id)) {
         marker.remove()
@@ -266,7 +286,7 @@ export default function DashboardMap({
     }
 
     // Add/update waypoint markers
-    for (const wp of waypoints) {
+    for (const wp of visibleWaypoints) {
       if (existing.has(wp.id)) {
         existing.get(wp.id)!.setLngLat([wp.lng, wp.lat])
       } else {
@@ -280,8 +300,8 @@ export default function DashboardMap({
 
         el.addEventListener('click', (e) => {
           e.stopPropagation()
-          const tripId = selectedTripIdRef.current
-          if (tripId) onWaypointClickRef.current?.(tripId, wp.id)
+          const tripId = selectedTripIdRef.current ?? wp.trip_id
+          onWaypointClickRef.current?.(tripId, wp.id)
         })
         el.addEventListener('mouseenter', () => {
           dot.style.transform = 'scale(1.4)'
@@ -298,7 +318,7 @@ export default function DashboardMap({
       }
     }
 
-  }, [mapReady, waypoints])
+  }, [mapReady, visibleWaypoints])
 
   // Fly to selected trip — compute center from all available coords
   useEffect(() => {
@@ -306,11 +326,12 @@ export default function DashboardMap({
     const map = mapRef.current
 
     if (!selectedTripId) {
-      // Deselected — zoom back to all centroids
-      if (centroids.length > 0) {
-        const bounds = new maplibregl.LngLatBounds()
-        for (const c of centroids) bounds.extend([c.lng, c.lat])
-        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 })
+      // Deselected — zoom back to all centroids + all waypoints
+      const bounds = new maplibregl.LngLatBounds()
+      for (const c of centroids) bounds.extend([c.lng, c.lat])
+      for (const wp of allWaypoints) bounds.extend([wp.lng, wp.lat])
+      if (centroids.length > 0 || allWaypoints.length > 0) {
+        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 1200 })
       }
       return
     }
@@ -339,13 +360,13 @@ export default function DashboardMap({
 
     if (allPoints.length === 1) {
       // Single point — flyTo with a reasonable zoom
-      map.flyTo({ center: allPoints[0], zoom: 12, duration: 800 })
+      map.flyTo({ center: allPoints[0], zoom: 12, duration: 1200 })
     } else {
       const bounds = new maplibregl.LngLatBounds()
       for (const pt of allPoints) bounds.extend(pt)
-      map.fitBounds(bounds, { padding: 80, duration: 800 })
+      map.fitBounds(bounds, { padding: 80, duration: 1200 })
     }
-  }, [mapReady, selectedTripId, waypoints, trips, centroids])
+  }, [mapReady, selectedTripId, waypoints, allWaypoints, trips, centroids])
 
   if (error) {
     return (
