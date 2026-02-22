@@ -24,7 +24,7 @@
     "54322": { "label": "Supabase DB", "onAutoForward": "silent" },
     "54323": { "label": "Supabase Studio", "onAutoForward": "notify" }
   },
-  "postCreateCommand": "npm ci && npx playwright install --with-deps && (gh extension install github/gh-copilot || true)",
+  "postCreateCommand": "npm ci && npx -y playwright install --with-deps && (gh extension install github/gh-copilot || true)",
   "postStartCommand": "cp -n .env.local.example .env.local 2>/dev/null; echo 'Ready — run: npx supabase start && npm run dev'",
   "customizations": {
     "vscode": {
