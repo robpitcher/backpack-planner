@@ -23,7 +23,7 @@ export default function MapStyleToggle({
       variant="secondary"
       size="icon"
       onClick={toggle}
-      className="absolute right-3 top-3 z-10 h-9 w-9 bg-white shadow-md hover:bg-gray-100"
+      className="absolute right-3 top-3 z-10 h-9 w-9 bg-white text-gray-700 shadow-md hover:bg-gray-100"
       title={isPositron ? 'Switch to outdoor' : 'Switch to clean'}
     >
       {isPositron ? (
