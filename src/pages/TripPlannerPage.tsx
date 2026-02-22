@@ -30,6 +30,7 @@ export default function TripPlannerPage() {
   const currentTrip = trips.find((t) => t.id === tripId) ?? null
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null)
 
   // Load trip's is_public status
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function TripPlannerPage() {
 
   const handleWaypointSelect = useCallback(
     (waypoint: Waypoint) => {
+      setSelectedWaypointId(waypoint.id)
       const map = mapRef.current?.getMap() ?? null
       panToWaypoint(map, waypoint)
     },
@@ -145,6 +147,7 @@ export default function TripPlannerPage() {
             <TabsContent value="map" className="min-h-0 flex-1 overflow-y-auto">
               <WaypointList
                 waypoints={waypoints}
+                selectedWaypointId={selectedWaypointId}
                 onSelect={handleWaypointSelect}
               />
             </TabsContent>
@@ -191,7 +194,7 @@ export default function TripPlannerPage() {
         {/* Map + elevation profile */}
         <div className="relative flex min-h-[300px] flex-1 flex-col">
           <div className="relative flex-1">
-            <MapView ref={mapRef} tripId={tripId} />
+            <MapView ref={mapRef} tripId={tripId} onWaypointSelect={setSelectedWaypointId} />
           </div>
           <ElevationProfile
             routeGeoJSON={route}

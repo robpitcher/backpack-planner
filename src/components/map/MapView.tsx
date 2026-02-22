@@ -85,7 +85,7 @@ interface RouteGeoJSON {
   id?: string
 }
 
-const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView({ tripId }, ref) {
+const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: (waypointId: string) => void }>(function MapView({ tripId, onWaypointSelect }, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
@@ -359,6 +359,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
           tripId={tripId}
           isPlacing={isPlacingWaypoint}
           onPlacingDone={() => setIsPlacingWaypoint(false)}
+          onWaypointSelect={onWaypointSelect}
         />
       )}
       <div ref={containerRef} className="h-full w-full" />
