@@ -29,9 +29,13 @@ export type UpdateTripInput = Partial<
 export async function createTrip(
   data: CreateTripInput,
 ): Promise<ApiResult<Trip>> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { data: null, error: { message: 'Not authenticated', details: '', hint: '', code: 'AUTH' } as PostgrestError }
+
   const { data: trip, error } = await supabase
     .from('trips')
     .insert({
+      user_id: user.id,
       title: data.title,
       description: data.description ?? null,
       start_date: data.start_date ?? null,
