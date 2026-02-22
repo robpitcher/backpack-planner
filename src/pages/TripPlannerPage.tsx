@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft } from 'lucide-react'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
 import ElevationProfile from '@/components/map/ElevationProfile'
@@ -87,7 +87,12 @@ export default function TripPlannerPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          <h1 className="text-base font-semibold sm:text-lg">Trip Planner</h1>
+          <Link to="/dashboard" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground" aria-label="Back to dashboard">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
+            TrailForge
+          </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
@@ -113,21 +118,26 @@ export default function TripPlannerPage() {
           } w-full shrink-0 flex-col border-r bg-background sm:w-72 md:w-80 lg:flex lg:w-80`}
         >
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
-            <TabsList className="mx-2 mt-2 w-auto shrink-0">
-              <TabsTrigger value="map">
-                <Map className="mr-1 h-4 w-4" />
+            <div className="shrink-0 border-b px-3 pb-2 pt-3">
+              <h2 className="text-base font-bold tracking-wide">
+                {currentTrip?.name ?? 'Trip Planner'}
+              </h2>
+            </div>
+            <TabsList className="mx-2 mt-2 flex h-auto w-auto shrink-0 flex-wrap gap-1">
+              <TabsTrigger value="map" className="text-xs px-2 py-1">
+                <Map className="mr-1 h-3.5 w-3.5" />
                 Map
               </TabsTrigger>
-              <TabsTrigger value="gear">
-                <Backpack className="mr-1 h-4 w-4" />
+              <TabsTrigger value="gear" className="text-xs px-2 py-1">
+                <Backpack className="mr-1 h-3.5 w-3.5" />
                 Gear
               </TabsTrigger>
-              <TabsTrigger value="itinerary">
-                <CalendarDays className="mr-1 h-4 w-4" />
+              <TabsTrigger value="itinerary" className="text-xs px-2 py-1">
+                <CalendarDays className="mr-1 h-3.5 w-3.5" />
                 Itinerary
               </TabsTrigger>
-              <TabsTrigger value="conditions">
-                <CloudSun className="mr-1 h-4 w-4" />
+              <TabsTrigger value="conditions" className="text-xs px-2 py-1">
+                <CloudSun className="mr-1 h-3.5 w-3.5" />
                 Conditions
               </TabsTrigger>
             </TabsList>

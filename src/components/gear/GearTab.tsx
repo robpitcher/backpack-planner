@@ -155,11 +155,12 @@ export default function GearTab({ tripId }: GearTabProps) {
       </div>
 
       {/* View / Sort Controls */}
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-1 text-sm">
+        <div className="flex flex-wrap gap-1">
           <Button
             variant={viewMode === 'all' ? 'default' : 'ghost'}
             size="sm"
+            className="text-xs px-2 py-1 h-7"
             onClick={() => setViewMode('all')}
           >
             All Items
@@ -167,16 +168,18 @@ export default function GearTab({ tripId }: GearTabProps) {
           <Button
             variant={viewMode === 'checklist' ? 'default' : 'ghost'}
             size="sm"
+            className="text-xs px-2 py-1 h-7"
             onClick={() => setViewMode('checklist')}
           >
             Checklist
           </Button>
         </div>
         {viewMode === 'all' && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             <Button
               variant={sortMode === 'category' ? 'secondary' : 'ghost'}
               size="sm"
+              className="text-xs px-2 py-1 h-7"
               onClick={() => setSortMode('category')}
             >
               By Category
@@ -184,6 +187,7 @@ export default function GearTab({ tripId }: GearTabProps) {
             <Button
               variant={sortMode === 'name' ? 'secondary' : 'ghost'}
               size="sm"
+              className="text-xs px-2 py-1 h-7"
               onClick={() => setSortMode('name')}
             >
               By Name

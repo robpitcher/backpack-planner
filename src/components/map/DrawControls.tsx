@@ -23,7 +23,7 @@ export default function DrawControls({
   onToggleWaypoint,
 }: DrawControlsProps) {
   return (
-    <div className="absolute left-3 top-14 z-10 flex flex-col gap-1">
+    <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-1">
       <Button
         variant={isDrawing ? 'default' : 'secondary'}
         size="icon"
