@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type Theme = 'dark' | 'light' | 'system'
+type Theme = 'dark' | 'light' | 'system' | 'deep-forest' | 'dusk-ridge' | 'canopy'
 
 interface ThemeContextValue {
   theme: Theme
@@ -13,14 +13,20 @@ function getSystemTheme(): 'dark' | 'light' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+const ADVENTURE_THEMES = ['deep-forest', 'dusk-ridge', 'canopy'] as const
+
 function applyTheme(theme: Theme) {
   const root = document.documentElement
   const resolvedTheme = theme === 'system' ? getSystemTheme() : theme
 
-  if (resolvedTheme === 'dark') {
+  // Remove all theme classes first
+  root.classList.remove('dark', ...ADVENTURE_THEMES)
+
+  if (ADVENTURE_THEMES.includes(resolvedTheme as typeof ADVENTURE_THEMES[number])) {
+    // Adventure themes are dark-based, so add both 'dark' and the specific theme class
+    root.classList.add('dark', resolvedTheme)
+  } else if (resolvedTheme === 'dark') {
     root.classList.add('dark')
-  } else {
-    root.classList.remove('dark')
   }
 }
 
