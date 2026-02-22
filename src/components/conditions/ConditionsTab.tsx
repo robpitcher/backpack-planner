@@ -113,9 +113,9 @@ export default function ConditionsTab({ tripId: _tripId, startDate, endDate }: C
   if (!forecast) return null
 
   return (
-    <div className="flex flex-col gap-3 overflow-y-auto p-3">
+    <div className="flex flex-col gap-3 overflow-y-auto p-3 pt-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b pb-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">
             {forecast.locationName}

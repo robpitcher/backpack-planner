@@ -17,6 +17,7 @@ interface DeleteTripDialogProps {
   tripTitle: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  onDeleted?: () => void
 }
 
 export default function DeleteTripDialog({
@@ -24,6 +25,7 @@ export default function DeleteTripDialog({
   tripTitle,
   open,
   onOpenChange,
+  onDeleted,
 }: DeleteTripDialogProps) {
   const deleteTripAction = useTripStore((s) => s.deleteTrip)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -36,6 +38,7 @@ export default function DeleteTripDialog({
     if (ok) {
       toast.success('Trip deleted')
       onOpenChange(false)
+      onDeleted?.()
     } else {
       toast.error('Failed to delete trip')
     }

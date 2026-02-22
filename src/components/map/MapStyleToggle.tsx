@@ -1,7 +1,7 @@
 import { Mountain, Satellite } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export type MapStyle = 'outdoors-v12' | 'satellite-streets-v12'
+export type MapStyle = 'liberty' | 'positron'
 
 interface MapStyleToggleProps {
   currentStyle: MapStyle
@@ -12,10 +12,10 @@ export default function MapStyleToggle({
   currentStyle,
   onToggle,
 }: MapStyleToggleProps) {
-  const isSatellite = currentStyle === 'satellite-streets-v12'
+  const isPositron = currentStyle === 'positron'
 
   const toggle = () => {
-    onToggle(isSatellite ? 'outdoors-v12' : 'satellite-streets-v12')
+    onToggle(isPositron ? 'liberty' : 'positron')
   }
 
   return (
@@ -23,10 +23,10 @@ export default function MapStyleToggle({
       variant="secondary"
       size="icon"
       onClick={toggle}
-      className="absolute right-3 top-3 z-10 h-9 w-9 bg-white shadow-md hover:bg-gray-100"
-      title={isSatellite ? 'Switch to topo' : 'Switch to satellite'}
+      className="absolute right-3 top-3 z-10 h-9 w-9 bg-white text-gray-700 shadow-md hover:bg-gray-100"
+      title={isPositron ? 'Switch to outdoor' : 'Switch to clean'}
     >
-      {isSatellite ? (
+      {isPositron ? (
         <Mountain className="h-4 w-4" />
       ) : (
         <Satellite className="h-4 w-4" />

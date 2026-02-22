@@ -3,11 +3,13 @@ import { WAYPOINT_STYLES } from '@/components/map/waypointUtils'
 
 interface WaypointListProps {
   waypoints: Waypoint[]
+  selectedWaypointId?: string | null
   onSelect: (waypoint: Waypoint) => void
 }
 
 export default function WaypointList({
   waypoints,
+  selectedWaypointId,
   onSelect,
 }: WaypointListProps) {
   if (waypoints.length === 0) {
@@ -32,7 +34,9 @@ export default function WaypointList({
             <li key={wp.id}>
               <button
                 onClick={() => onSelect(wp)}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-accent transition-colors"
+                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                  wp.id === selectedWaypointId ? 'bg-accent' : 'hover:bg-accent/50'
+                }`}
               >
                 <span
                   className="inline-block h-3 w-3 flex-shrink-0 rounded-full"

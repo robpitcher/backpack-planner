@@ -1,5 +1,5 @@
-declare module '@mapbox/mapbox-gl-draw' {
-  import type { IControl, Map } from 'mapbox-gl'
+declare module 'maplibre-gl-draw' {
+  import type { IControl, Map } from 'maplibre-gl'
 
   interface DrawOptions {
     displayControlsDefault?: boolean

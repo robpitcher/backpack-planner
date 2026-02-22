@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import mapboxgl from 'mapbox-gl'
+import maplibregl from 'maplibre-gl'
 import { toast } from 'sonner'
 import type { Waypoint } from '@/types'
 import { useTripStore } from '@/stores/tripStore'
@@ -16,7 +16,7 @@ import type { WaypointFormData } from './WaypointForm'
 import WaypointPopup from './WaypointPopup'
 
 interface WaypointLayerProps {
-  map: mapboxgl.Map | null
+  map: maplibregl.Map | null
   tripId: string
   isPlacing: boolean
   onPlacingDone: () => void
@@ -30,10 +30,11 @@ export default function WaypointLayer({
   onPlacingDone,
   onWaypointSelect,
 }: WaypointLayerProps) {
-  const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map())
-  const popupRef = useRef<mapboxgl.Popup | null>(null)
-  const createPopupRef = useRef<mapboxgl.Popup | null>(null)
+  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const popupRef = useRef<maplibregl.Popup | null>(null)
+  const createPopupRef = useRef<maplibregl.Popup | null>(null)
   const [editingWaypoint, setEditingWaypoint] = useState<Waypoint | null>(null)
+  const initialFitDone = useRef(false)
 
   const waypoints = useTripStore((s) => s.waypoints)
   const addWaypoint = useTripStore((s) => s.addWaypoint)
@@ -49,9 +50,18 @@ export default function WaypointLayer({
         console.error('Failed to load waypoints:', error.message)
         return
       }
-      if (data) setWaypoints(data)
+      if (data) {
+        setWaypoints(data)
+        // Fit map to all waypoints on initial load
+        if (!initialFitDone.current && map && data.length > 0) {
+          initialFitDone.current = true
+          const bounds = new maplibregl.LngLatBounds()
+          data.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+        }
+      }
     })
-  }, [tripId, setWaypoints])
+  }, [tripId, setWaypoints, map])
 
   // Close any open popup
   const closePopups = useCallback(() => {
@@ -121,7 +131,7 @@ export default function WaypointLayer({
 
   // Handle waypoint drag
   const handleDrag = useCallback(
-    async (waypoint: Waypoint, lngLat: mapboxgl.LngLat) => {
+    async (waypoint: Waypoint, lngLat: maplibregl.LngLat) => {
       updateWaypointStore(waypoint.id, { lat: lngLat.lat, lng: lngLat.lng })
       const { error } = await apiUpdateWaypoint(waypoint.id, {
         lat: lngLat.lat,
@@ -190,7 +200,7 @@ export default function WaypointLayer({
         )
       }
 
-      const popup = new mapboxgl.Popup({
+      const popup = new maplibregl.Popup({
         closeOnClick: false,
         maxWidth: '280px',
         offset: 20,
@@ -215,7 +225,7 @@ export default function WaypointLayer({
 
     map.getCanvas().style.cursor = 'crosshair'
 
-    const onClick = (e: mapboxgl.MapMouseEvent) => {
+    const onClick = (e: maplibregl.MapMouseEvent) => {
       closePopups()
 
       const container = document.createElement('div')
@@ -235,7 +245,7 @@ export default function WaypointLayer({
         />,
       )
 
-      const popup = new mapboxgl.Popup({
+      const popup = new maplibregl.Popup({
         closeOnClick: false,
         maxWidth: '280px',
         offset: 12,
@@ -285,7 +295,7 @@ export default function WaypointLayer({
       } else {
         // Create new marker
         const el = createMarkerElement(wp.type)
-        const marker = new mapboxgl.Marker({
+        const marker = new maplibregl.Marker({
           element: el,
           draggable: true,
         })
@@ -332,13 +342,13 @@ export default function WaypointLayer({
 
 /** Pan the map to a specific waypoint */
 export function panToWaypoint(
-  map: mapboxgl.Map | null,
+  map: maplibregl.Map | null,
   waypoint: Waypoint,
 ) {
   if (!map) return
   map.flyTo({
     center: [waypoint.lng, waypoint.lat],
     zoom: Math.max(map.getZoom(), 13),
-    duration: 800,
+    duration: 1200,
   })
 }

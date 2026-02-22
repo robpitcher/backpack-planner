@@ -29,9 +29,13 @@ export async function duplicateTrip(
   const srcTrip = source as Trip
 
   // 2. Create new trip record
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { data: null, error: { message: 'Not authenticated', details: '', hint: '', code: 'AUTH' } as PostgrestError }
+
   const { data: newTrip, error: createError } = await supabase
     .from('trips')
     .insert({
+      user_id: user.id,
       title: newTitle,
       description: srcTrip.description,
       status: 'draft',

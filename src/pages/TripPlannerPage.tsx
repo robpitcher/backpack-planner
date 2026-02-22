@@ -1,18 +1,27 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft, UserCircle, Pencil } from 'lucide-react'
+import { toast } from 'sonner'
+import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
 import ElevationProfile from '@/components/map/ElevationProfile'
 import WaypointList from '@/components/sidebar/WaypointList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import GearTab from '@/components/gear/GearTab'
 import ItineraryTab from '@/components/itinerary/ItineraryTab'
 import ConditionsTab from '@/components/conditions/ConditionsTab'
 import GPXImportButton from '@/components/map/GPXImportButton'
 import GPXExportButton from '@/components/map/GPXExportButton'
 import ShareToggle from '@/components/ShareToggle'
+import ThemeToggle from '@/components/ThemeToggle'
 import { useTripStore } from '@/stores/tripStore'
 import { useAuthStore } from '@/stores/authStore'
 import { getTrip } from '@/lib/api/trips'
@@ -20,36 +29,126 @@ import type { Waypoint } from '@/types'
 
 export default function TripPlannerPage() {
   const { tripId } = useParams()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const mapRef = useRef<MapViewHandle>(null)
   const waypoints = useTripStore((s) => s.waypoints)
   const route = useTripStore((s) => s.route)
   const days = useTripStore((s) => s.days)
   const trips = useTripStore((s) => s.trips)
   const preferredUnits = useAuthStore((s) => s.preferredUnits)
+  const { logout } = useAuthStore()
   const currentTrip = trips.find((t) => t.id === tripId) ?? null
+  const [tripName, setTripName] = useState<string>(currentTrip?.title ?? '')
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editingName, setEditingName] = useState('')
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const updateTrip = useTripStore((s) => s.updateTrip)
 
   // Load trip's is_public status
   useEffect(() => {
     if (!tripId) return
     getTrip(tripId).then((res) => {
-      if (res.data) setIsPublic(res.data.is_public)
+      if (res.data) {
+        setIsPublic(res.data.is_public)
+        setTripName(res.data.title)
+      }
     })
   }, [tripId])
 
   // Sync isPublic when trips list updates
   useEffect(() => {
-    if (currentTrip) setIsPublic(currentTrip.is_public)
+    if (currentTrip) {
+      setIsPublic(currentTrip.is_public)
+      setTripName(currentTrip.title)
+    }
   }, [currentTrip])
+
+  // Auto-select waypoint from query param (e.g., from dashboard click)
+  const pendingWaypointId = searchParams.get('waypoint')
+  useEffect(() => {
+    if (!pendingWaypointId || waypoints.length === 0) return
+    const wp = waypoints.find((w) => w.id === pendingWaypointId)
+    if (wp) {
+      const map = mapRef.current?.getMap() ?? null
+      panToWaypoint(map, wp)
+      // Clear the query param so it doesn't re-trigger
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('waypoint')
+        return next
+      }, { replace: true })
+    }
+  }, [pendingWaypointId, waypoints, setSearchParams])
 
   const handleWaypointSelect = useCallback(
     (waypoint: Waypoint) => {
       const map = mapRef.current?.getMap() ?? null
-      panToWaypoint(map, waypoint)
+      if (selectedWaypointId === waypoint.id) {
+        // Deselect and zoom out to fit all waypoints + route
+        setSelectedWaypointId(null)
+        if (map && waypoints.length > 0) {
+          const bounds = new maplibregl.LngLatBounds()
+          waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+          if (route) {
+            const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
+            coords?.forEach((c) => bounds.extend(c as [number, number]))
+          }
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+        }
+      } else {
+        setSelectedWaypointId(waypoint.id)
+        panToWaypoint(map, waypoint)
+      }
     },
-    [],
+    [selectedWaypointId, waypoints, route],
   )
+
+  const handleBackClick = useCallback(() => {
+    if (selectedWaypointId) {
+      // Deselect waypoint and zoom back to all waypoints
+      setSelectedWaypointId(null)
+      const map = mapRef.current?.getMap() ?? null
+      if (map && waypoints.length > 0) {
+        const bounds = new maplibregl.LngLatBounds()
+        waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+        if (route) {
+          const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
+          coords?.forEach((c) => bounds.extend(c as [number, number]))
+        }
+        map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+      }
+    } else {
+      navigate('/dashboard')
+    }
+  }, [selectedWaypointId, waypoints, route, navigate])
+
+  const startEditingName = useCallback(() => {
+    setEditingName(tripName)
+    setIsEditingName(true)
+    setTimeout(() => nameInputRef.current?.select(), 0)
+  }, [tripName])
+
+  const saveEditingName = useCallback(async () => {
+    setIsEditingName(false)
+    const trimmed = editingName.trim()
+    if (!trimmed || trimmed === tripName || !tripId) return
+    setTripName(trimmed)
+    const result = await updateTrip(tripId, { title: trimmed })
+    if (result) {
+      toast.success('Trip renamed')
+    } else {
+      setTripName(tripName) // revert on failure
+      toast.error('Failed to rename trip')
+    }
+  }, [editingName, tripName, tripId, updateTrip])
+
+  const cancelEditingName = useCallback(() => {
+    setIsEditingName(false)
+  }, [])
 
   return (
     <div className="flex h-screen min-h-0 w-full flex-col">
@@ -69,7 +168,12 @@ export default function TripPlannerPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          <h1 className="text-base font-semibold sm:text-lg">Trip Planner</h1>
+          <button onClick={handleBackClick} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <button onClick={handleBackClick} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
+            Trip Planner
+          </button>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
@@ -80,9 +184,20 @@ export default function TripPlannerPage() {
               <ShareToggle tripId={tripId} isPublic={isPublic} />
             </>
           )}
-          <span className="hidden text-sm text-muted-foreground sm:inline">
-            {tripId ? `Trip: ${tripId.slice(0, 8)}…` : 'New Trip'}
-          </span>
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
+                <UserCircle className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -95,21 +210,48 @@ export default function TripPlannerPage() {
           } w-full shrink-0 flex-col border-r bg-background sm:w-72 md:w-80 lg:flex lg:w-80`}
         >
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
-            <TabsList className="mx-2 mt-2 w-auto shrink-0">
-              <TabsTrigger value="map">
-                <Map className="mr-1 h-4 w-4" />
+            <div className="shrink-0 border-b px-3 pb-2 pt-3">
+              {isEditingName ? (
+                <input
+                  ref={nameInputRef}
+                  className="w-full text-base font-bold tracking-wide break-words bg-transparent border-b-2 border-primary outline-none"
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onBlur={saveEditingName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditingName()
+                    if (e.key === 'Escape') cancelEditingName()
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <button
+                  className="group flex w-full items-center gap-1.5 text-left cursor-pointer"
+                  onClick={startEditingName}
+                  title="Click to rename"
+                >
+                  <h2 className="text-base font-bold tracking-wide break-words">
+                    {tripName || 'Trip Planner'}
+                  </h2>
+                  <Pencil className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )}
+            </div>
+            <TabsList className="mx-2 mt-2 flex h-auto w-auto shrink-0 flex-wrap gap-1">
+              <TabsTrigger value="map" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
+                <Map className="mr-1 h-3.5 w-3.5" />
                 Map
               </TabsTrigger>
-              <TabsTrigger value="gear">
-                <Backpack className="mr-1 h-4 w-4" />
+              <TabsTrigger value="gear" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
+                <Backpack className="mr-1 h-3.5 w-3.5" />
                 Gear
               </TabsTrigger>
-              <TabsTrigger value="itinerary">
-                <CalendarDays className="mr-1 h-4 w-4" />
+              <TabsTrigger value="itinerary" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
+                <CalendarDays className="mr-1 h-3.5 w-3.5" />
                 Itinerary
               </TabsTrigger>
-              <TabsTrigger value="conditions">
-                <CloudSun className="mr-1 h-4 w-4" />
+              <TabsTrigger value="conditions" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">
+                <CloudSun className="mr-1 h-3.5 w-3.5" />
                 Conditions
               </TabsTrigger>
             </TabsList>
@@ -117,6 +259,7 @@ export default function TripPlannerPage() {
             <TabsContent value="map" className="min-h-0 flex-1 overflow-y-auto">
               <WaypointList
                 waypoints={waypoints}
+                selectedWaypointId={selectedWaypointId}
                 onSelect={handleWaypointSelect}
               />
             </TabsContent>
@@ -163,7 +306,7 @@ export default function TripPlannerPage() {
         {/* Map + elevation profile */}
         <div className="relative flex min-h-[300px] flex-1 flex-col">
           <div className="relative flex-1">
-            <MapView ref={mapRef} tripId={tripId} />
+            <MapView ref={mapRef} tripId={tripId} onWaypointSelect={setSelectedWaypointId} />
           </div>
           <ElevationProfile
             routeGeoJSON={route}

@@ -6,12 +6,12 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react'
-import mapboxgl from 'mapbox-gl'
-import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import maplibregl from 'maplibre-gl'
+import MapboxDraw from 'maplibre-gl-draw'
 import length from '@turf/length'
 import { lineString } from '@turf/helpers'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import 'maplibre-gl-draw/dist/mapbox-gl-draw.css'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import MapStyleToggle, { type MapStyle } from './MapStyleToggle'
 import DrawControls from './DrawControls'
@@ -21,7 +21,8 @@ import { useTripStore } from '@/stores/tripStore'
 import { useAuthStore } from '@/stores/authStore'
 import { kilometersToMiles } from '@/utils/units'
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
+const FREE_STYLE_LIBERTY = 'https://tiles.openfreemap.org/styles/liberty'
+const FREE_STYLE_POSITRON = 'https://tiles.openfreemap.org/styles/positron'
 
 // Draw styling — trail-colored route line with vertex circles
 const DRAW_STYLES: object[] = [
@@ -69,7 +70,7 @@ const DRAW_STYLES: object[] = [
 ]
 
 export interface MapViewHandle {
-  getMap: () => mapboxgl.Map | null
+  getMap: () => maplibregl.Map | null
   getIsPlacing: () => boolean
   setIsPlacing: (v: boolean) => void
 }
@@ -84,13 +85,13 @@ interface RouteGeoJSON {
   id?: string
 }
 
-const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView({ tripId }, ref) {
+const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: (waypointId: string) => void }>(function MapView({ tripId, onWaypointSelect }, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<mapboxgl.Map | null>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
   const drawRef = useRef<MapboxDraw | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [mapStyle, setMapStyle] = useState<MapStyle>('outdoors-v12')
+  const [mapStyle, setMapStyle] = useState<MapStyle>('liberty')
   const [isDrawing, setIsDrawing] = useState(false)
   const [routeCoords, setRouteCoords] = useState<number[][]>([])
   const [isPlacingWaypoint, setIsPlacingWaypoint] = useState(false)
@@ -148,24 +149,16 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
   // ── Map init ──
   useEffect(() => {
     if (!containerRef.current) return
-    if (!MAPBOX_TOKEN) {
-      setError(
-        'Mapbox token is missing. Set VITE_MAPBOX_TOKEN in your .env.local file.',
-      )
-      setIsLoading(false)
-      return
-    }
+    const styleUrl = mapStyle === 'liberty' ? FREE_STYLE_LIBERTY : FREE_STYLE_POSITRON
 
-    mapboxgl.accessToken = MAPBOX_TOKEN
-
-    const map = new mapboxgl.Map({
+    const map = new maplibregl.Map({
       container: containerRef.current,
-      style: `mapbox://styles/mapbox/${mapStyle}`,
+      style: styleUrl,
       center: [-111.0937, 38.5733],
       zoom: 6,
     })
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-left')
+    map.addControl(new maplibregl.NavigationControl(), 'top-left')
 
     const draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -173,7 +166,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
       defaultMode: 'simple_select',
       styles: DRAW_STYLES,
     })
-    map.addControl(draw as unknown as mapboxgl.IControl)
+    map.addControl(draw as unknown as maplibregl.IControl)
     drawRef.current = draw
 
     // Load existing route from store
@@ -203,7 +196,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
 
     map.on('error', (e) => {
       const msg =
-        e.error?.message ?? 'Map failed to load. Check your token and network.'
+        e.error?.message ?? 'Map failed to load. Check your network connection.'
       setError(msg)
       setIsLoading(false)
     })
@@ -228,7 +221,8 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
 
       // Save current features before style swap
       const features = draw.getAll() as GeoJSON.FeatureCollection
-      map.setStyle(`mapbox://styles/mapbox/${style}`)
+      const styleUrl = style === 'liberty' ? FREE_STYLE_LIBERTY : FREE_STYLE_POSITRON
+      map.setStyle(styleUrl)
 
       // Restore features after new style loads
       map.once('style.load', () => {
@@ -365,6 +359,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string }>(function MapView(
           tripId={tripId}
           isPlacing={isPlacingWaypoint}
           onPlacingDone={() => setIsPlacingWaypoint(false)}
+          onWaypointSelect={onWaypointSelect}
         />
       )}
       <div ref={containerRef} className="h-full w-full" />

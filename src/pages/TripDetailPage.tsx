@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { useParams, Link } from 'react-router-dom'
 import {
   MapPin,
@@ -315,89 +317,95 @@ function ReadOnlyMap({
   routeGeoJSON: Record<string, unknown>
   waypoints: Array<{ lat: number; lng: number; name: string }>
 }) {
-  const containerRef = useState<HTMLDivElement | null>(null)
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const waypointMarkersRef = useRef<maplibregl.Marker[]>([])
 
+  // Create map once on mount, return proper cleanup
   useEffect(() => {
-    const container = containerRef[0]
-    if (!container || !mapboxToken) return
+    const container = containerRef.current
+    if (!container) return
 
-    // Dynamic import to avoid SSR issues
-    import('mapbox-gl').then(({ default: mapboxgl }) => {
-      mapboxgl.accessToken = mapboxToken
-
-      const map = new mapboxgl.Map({
-        container,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
-        center: [-111.09, 38.57],
-        zoom: 6,
-        interactive: true,
-        attributionControl: true,
-      })
-
-      map.addControl(new mapboxgl.NavigationControl(), 'top-left')
-
-      map.on('load', () => {
-        // Add route line
-        const geom = routeGeoJSON as {
-          geometry?: { type: string; coordinates: number[][] }
-        }
-        if (geom?.geometry?.coordinates?.length) {
-          map.addSource('route', {
-            type: 'geojson',
-            data: routeGeoJSON as unknown as GeoJSON.Feature,
-          })
-          map.addLayer({
-            id: 'route-line',
-            type: 'line',
-            source: 'route',
-            paint: {
-              'line-color': '#C2410C',
-              'line-width': 3.5,
-            },
-          })
-
-          // Fit bounds to route
-          const coords = geom.geometry!.coordinates
-          const bounds = coords.reduce(
-            (b, c) => b.extend(c as [number, number]),
-            new mapboxgl.LngLatBounds(
-              coords[0] as [number, number],
-              coords[0] as [number, number],
-            ),
-          )
-          map.fitBounds(bounds, { padding: 60 })
-        }
-
-        // Add waypoint markers
-        for (const wp of waypoints) {
-          new mapboxgl.Marker({ color: '#D97706' })
-            .setLngLat([wp.lng, wp.lat])
-            .setPopup(new mapboxgl.Popup().setText(wp.name))
-            .addTo(map)
-        }
-      })
-
-      return () => map.remove()
+    const map = new maplibregl.Map({
+      container,
+      style: 'https://tiles.openfreemap.org/styles/liberty',
+      center: [-111.09, 38.57],
+      zoom: 6,
+      interactive: true,
     })
-  }, [containerRef, mapboxToken, routeGeoJSON, waypoints])
 
-  if (!mapboxToken) {
-    return (
-      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        Map unavailable
-      </div>
-    )
-  }
+    map.addControl(new maplibregl.NavigationControl(), 'top-left')
+    mapRef.current = map
 
-  return (
-    <div
-      ref={(el) => {
-        if (el && el !== containerRef[0]) {
-          containerRef[1](el)
-        }
-      }}
-      className="h-80 w-full"
-    />
-  )
+    return () => {
+      // Explicitly remove any waypoint markers before removing the map instance
+      waypointMarkersRef.current.forEach((marker) => marker.remove())
+      waypointMarkersRef.current = []
+      mapRef.current = null
+      map.remove()
+    }
+  }, [])
+
+  // Update route and waypoints whenever they change
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const applyData = () => {
+      // Remove previous layers/sources if present
+      if (map.getLayer('route-line')) map.removeLayer('route-line')
+      if (map.getSource('route')) map.removeSource('route')
+
+      const geom = routeGeoJSON as {
+        geometry?: { type: string; coordinates: number[][] }
+      }
+      if (geom?.geometry?.coordinates?.length) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: routeGeoJSON as unknown as GeoJSON.Feature,
+        })
+        map.addLayer({
+          id: 'route-line',
+          type: 'line',
+          source: 'route',
+          paint: {
+            'line-color': '#C2410C',
+            'line-width': 3.5,
+          },
+        })
+
+        // Fit bounds to route
+        const coords = geom.geometry!.coordinates
+        const bounds = new maplibregl.LngLatBounds(
+          coords[0] as [number, number],
+          coords[0] as [number, number],
+        )
+        for (const c of coords) bounds.extend(c as [number, number])
+        map.fitBounds(bounds, { padding: 60 })
+      }
+
+      // Remove old waypoint markers then re-create
+      for (const m of waypointMarkersRef.current) m.remove()
+      waypointMarkersRef.current = []
+      for (const wp of waypoints) {
+        const marker = new maplibregl.Marker({ color: '#D97706' })
+          .setLngLat([wp.lng, wp.lat])
+          .setPopup(new maplibregl.Popup().setText(wp.name))
+          .addTo(map)
+        waypointMarkersRef.current.push(marker)
+      }
+    }
+
+    if (map.isStyleLoaded()) {
+      applyData()
+    } else {
+      map.once('load', applyData)
+    }
+
+    return () => {
+      map.off('load', applyData)
+    }
+  }, [routeGeoJSON, waypoints])
+
+  return <div ref={containerRef} className="h-80 w-full" />
 }
