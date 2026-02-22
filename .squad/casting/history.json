@@ -1,0 +1,8 @@
+[
+  {
+    "assignment_id": "backpack-planner-lotr-001",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-02-21T17:50:00Z",
+    "agents": ["Strider", "Pippin", "Gimli", "Legolas", "Gandalf", "Galadriel"]
+  }
+]
