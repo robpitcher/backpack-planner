@@ -10,7 +10,8 @@ export default function AppHeader() {
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/dashboard" className="text-xl font-bold tracking-tight">
+        <Link to="/dashboard" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <img src="/logo.png" alt="TrailForge" className="h-8 w-8" />
           TrailForge
         </Link>
 
