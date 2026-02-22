@@ -106,7 +106,7 @@ export default function GearTab({ tripId }: GearTabProps) {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
+    <div className="flex h-full flex-col gap-4 p-4 pt-8">
       {/* Header & Actions */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Gear</h2>
