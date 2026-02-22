@@ -8,16 +8,17 @@ Azure Static Web Apps (Free tier) with OIDC-based GitHub Actions deployment.
 |----------|---------|------|
 | Resource Group (`rg-trailforge-dev`) | Container for all resources | $0 |
 | Static Web App (`swa-trailforge-dev`) | Hosts the SPA | $0 (Free tier) |
-| User-Assigned Managed Identity (external) | OIDC auth for GitHub Actions | $0 (provisioned outside this Bicep template) |
-| Federated Identity Credential (external) | Links GitHub → Azure without secrets | $0 (provisioned outside this Bicep template) |
 
-Supabase and identity resources are hosted/provisioned externally — not managed by this IaC.
+Supabase is hosted externally (cloud free tier) — not managed by this IaC.
+
+The CI/CD pipeline authenticates via a **user-assigned managed identity** with a federated credential for GitHub Actions OIDC. The identity is pre-provisioned and managed outside of this IaC — it already has Contributor at the subscription scope.
 
 ## Prerequisites
 
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed
 - An active Azure subscription
 - Owner or Contributor role on the subscription
+- A user-assigned managed identity with Contributor role and a federated identity credential configured for the GitHub repo/environment (created separately, not part of this Bicep)
 
 ## One-Time Setup
 
@@ -40,20 +41,19 @@ az deployment sub create \
 
 The deployment outputs will show:
 - `staticWebAppName` — use this as `SWA_NAME` in GitHub
-- `managedIdentityClientId` — use this as `AZURE_CLIENT_ID` in GitHub
 
 ### 3. Configure GitHub environment
 
 In your repo → Settings → Environments → `dev`, set these variables/secrets:
 
-| Name | Type    | Source |
-|------|---------|--------|
-| `AZURE_CLIENT_ID`       | Secret   | `managedIdentityClientId` output from step 2 |
-| `AZURE_TENANT_ID`       | Secret   | Your Azure AD tenant ID (`az account show --query tenantId`) |
-| `AZURE_SUBSCRIPTION_ID` | Secret   | Your Azure subscription ID |
-| `SWA_NAME`              | Variable | `staticWebAppName` output from step 2 |
-| `VITE_SUPABASE_URL`     | Secret   | Supabase project → Settings → API → Project URL |
-| `VITE_SUPABASE_ANON_KEY`| Secret   | Supabase project → Settings → API → anon/public key |
+| Name | Type | Source |
+|------|------|--------|
+| `AZURE_CLIENT_ID` | Secret | Client ID of your pre-existing managed identity |
+| `AZURE_TENANT_ID` | Secret | Your Azure AD tenant ID (`az account show --query tenantId`) |
+| `AZURE_SUBSCRIPTION_ID` | Secret | Your Azure subscription ID |
+| `SWA_NAME` | Variable | `staticWebAppName` output from step 2 |
+| `VITE_SUPABASE_URL` | Secret | Supabase project → Settings → API → Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Secret | Supabase project → Settings → API → anon/public key |
 
 ### 4. Run Supabase migrations
 
