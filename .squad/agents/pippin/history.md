@@ -55,3 +55,15 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - Lucide icons for adventure themes: Trees (Deep Forest), Sunset (Dusk on the Ridge), Leaf (Canopy).
 - Hex-to-OKLCH conversion done via manual matrix math in Node.js (no external deps needed).
 - Each theme maps 8 spec colors → 30+ CSS variables by deriving muted/accent/sidebar/chart variants from the palette.
+
+## Session: Profile Modal
+
+**Focus:** Convert profile editing from a dedicated page to an in-place modal dialog.
+
+- Created `src/components/ProfileModal.tsx` — reusable Dialog-based profile editor with save/cancel. Uses shadcn Dialog, loads profile on open, closes on save/cancel.
+- Profile form extracted from ProfilePage.tsx logic (display name, avatar URL, skill level, unit preference).
+- Modal uses `onSelect` on DropdownMenuItem (not `asChild` + Link) to open — avoids navigation, stays on current page.
+- Added `backdrop-blur-sm` to `DialogOverlay` in `src/components/ui/dialog.tsx` — applies to all dialogs app-wide for consistent blurred backdrop.
+- DashboardPage, TripPlannerPage, AppHeader all updated to open ProfileModal instead of navigating to /profile.
+- `/profile` route kept in App.tsx for backwards compatibility.
+- User preference: Rob prefers modal-based editing over page navigation so users stay in context.

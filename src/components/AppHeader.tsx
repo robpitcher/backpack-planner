@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Github, LogOut, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 import ThemeToggle from '@/components/ThemeToggle'
+import ProfileModal from '@/components/ProfileModal'
 
 export default function AppHeader() {
   const { user, logout } = useAuthStore()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   return (
     <header className="border-b bg-card">
@@ -30,10 +33,8 @@ export default function AppHeader() {
 
           <ThemeToggle />
 
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/profile" aria-label="Profile">
-              <UserCircle className="h-5 w-5" />
-            </Link>
+          <Button variant="ghost" size="icon" onClick={() => setProfileOpen(true)} aria-label="Profile">
+            <UserCircle className="h-5 w-5" />
           </Button>
 
           <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out">
@@ -41,6 +42,8 @@ export default function AppHeader() {
           </Button>
         </div>
       </div>
+
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   )
 }

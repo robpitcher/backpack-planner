@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil, Github } from 'lucide-react'
 import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
@@ -23,6 +23,7 @@ import GPXImportButton from '@/components/map/GPXImportButton'
 import GPXExportButton from '@/components/map/GPXExportButton'
 import ShareToggle from '@/components/ShareToggle'
 import ThemeToggle from '@/components/ThemeToggle'
+import ProfileModal from '@/components/ProfileModal'
 import { useTripStore } from '@/stores/tripStore'
 import { useAuthStore } from '@/stores/authStore'
 import { getTrip } from '@/lib/api/trips'
@@ -42,6 +43,7 @@ export default function TripPlannerPage() {
   const [tripName, setTripName] = useState<string>(currentTrip?.title ?? '')
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null)
   const [isEditingName, setIsEditingName] = useState(false)
   const [editingName, setEditingName] = useState('')
@@ -180,8 +182,8 @@ export default function TripPlannerPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/profile">Profile</Link>
+              <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -309,6 +311,8 @@ export default function TripPlannerPage() {
           />
         </div>
       </div>
+
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   )
 }

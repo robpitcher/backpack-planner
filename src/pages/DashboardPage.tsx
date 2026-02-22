@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +16,7 @@ import DashboardMap from '@/components/map/DashboardMap'
 import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
+import ProfileModal from '@/components/ProfileModal'
 import type { TripStatus } from '@/types'
 
 const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
@@ -49,6 +50,7 @@ export default function DashboardPage() {
   const filteredTrips = useFilteredTrips()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
   const [highlightedTripId, setHighlightedTripId] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -138,8 +140,8 @@ export default function DashboardPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/profile">Profile</Link>
+              <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -253,6 +255,7 @@ export default function DashboardPage() {
       </div>
 
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   )
 }
