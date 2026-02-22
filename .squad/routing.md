@@ -11,6 +11,7 @@
 | Feature idea, requirements, user story, roadmap, prioritize, MVP | Gandalf |
 | UX, design, visual, accessibility, color, typography, layout design | Galadriel |
 | Map, MapLibre, route, waypoint, elevation, GPX | Pippin (UI) + Gimli (API) |
+| Azure, deploy, CI/CD, infrastructure, Docker, pipeline, hosting, domain, SSL | Elrond |
 | Gear, checklist, template | Pippin (UI) + Gimli (API) |
 
 ## Review Gates
