@@ -34,6 +34,7 @@ export default function WaypointLayer({
   const popupRef = useRef<maplibregl.Popup | null>(null)
   const createPopupRef = useRef<maplibregl.Popup | null>(null)
   const [editingWaypoint, setEditingWaypoint] = useState<Waypoint | null>(null)
+  const initialFitDone = useRef(false)
 
   const waypoints = useTripStore((s) => s.waypoints)
   const addWaypoint = useTripStore((s) => s.addWaypoint)
@@ -49,9 +50,18 @@ export default function WaypointLayer({
         console.error('Failed to load waypoints:', error.message)
         return
       }
-      if (data) setWaypoints(data)
+      if (data) {
+        setWaypoints(data)
+        // Fit map to all waypoints on initial load
+        if (!initialFitDone.current && map && data.length > 0) {
+          initialFitDone.current = true
+          const bounds = new maplibregl.LngLatBounds()
+          data.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 800 })
+        }
+      }
     })
-  }, [tripId, setWaypoints])
+  }, [tripId, setWaypoints, map])
 
   // Close any open popup
   const closePopups = useCallback(() => {
