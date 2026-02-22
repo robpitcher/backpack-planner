@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { getUserProfile, updateUserProfile } from '@/lib/api/profile'
 import type { UpdateProfileInput } from '@/lib/api/profile'
@@ -21,6 +22,7 @@ import AppHeader from '@/components/AppHeader'
 
 export default function ProfilePage() {
   const { user, setPreferredUnits } = useAuthStore()
+  const navigate = useNavigate()
 
   const [displayName, setDisplayName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -151,7 +153,10 @@ export default function ProfilePage() {
 
           <Separator />
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? 'Saving…' : 'Save Changes'}
             </Button>
