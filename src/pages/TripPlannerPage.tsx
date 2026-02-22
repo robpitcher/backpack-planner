@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
 import ElevationProfile from '@/components/map/ElevationProfile'
-import Breadcrumb, { type BreadcrumbItem } from '@/components/Breadcrumb'
+import Breadcrumb from '@/components/Breadcrumb'
 import WaypointList from '@/components/sidebar/WaypointList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -84,27 +84,31 @@ export default function TripPlannerPage() {
     }
   }, [pendingWaypointId, waypoints, setSearchParams])
 
+  const resetMapView = useCallback(() => {
+    setSelectedWaypointId(null)
+    const map = mapRef.current?.getMap() ?? null
+    if (map && waypoints.length > 0) {
+      const bounds = new maplibregl.LngLatBounds()
+      waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+      if (route) {
+        const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
+        coords?.forEach((c) => bounds.extend(c as [number, number]))
+      }
+      map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+    }
+  }, [waypoints, route])
+
   const handleWaypointSelect = useCallback(
     (waypoint: Waypoint) => {
-      const map = mapRef.current?.getMap() ?? null
       if (selectedWaypointId === waypoint.id) {
-        // Deselect and zoom out to fit all waypoints + route
-        setSelectedWaypointId(null)
-        if (map && waypoints.length > 0) {
-          const bounds = new maplibregl.LngLatBounds()
-          waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
-          if (route) {
-            const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
-            coords?.forEach((c) => bounds.extend(c as [number, number]))
-          }
-          map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
-        }
+        resetMapView()
       } else {
         setSelectedWaypointId(waypoint.id)
+        const map = mapRef.current?.getMap() ?? null
         panToWaypoint(map, waypoint)
       }
     },
-    [selectedWaypointId, waypoints, route],
+    [selectedWaypointId, resetMapView],
   )
 
   const startEditingName = useCallback(() => {
@@ -149,19 +153,10 @@ export default function TripPlannerPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          {(() => {
-            const items: BreadcrumbItem[] = [
-              { label: 'TrailForge', href: '/dashboard' },
-              ...(selectedWaypointId
-                ? [
-                    { label: tripName || 'Trip', onClick: () => setSelectedWaypointId(null) },
-                    { label: 'Waypoints', onClick: () => setSelectedWaypointId(null) },
-                    { label: waypoints.find((w) => w.id === selectedWaypointId)?.name || 'Waypoint' },
-                  ]
-                : [{ label: tripName || 'Trip' }]),
-            ]
-            return <Breadcrumb items={items} />
-          })()}
+          <Breadcrumb items={[
+            { label: 'TrailForge', href: '/dashboard' },
+            { label: 'Trip Planner', onClick: resetMapView },
+          ]} />
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
@@ -249,6 +244,7 @@ export default function TripPlannerPage() {
                 waypoints={waypoints}
                 selectedWaypointId={selectedWaypointId}
                 onSelect={handleWaypointSelect}
+                onDeselect={resetMapView}
               />
             </TabsContent>
 

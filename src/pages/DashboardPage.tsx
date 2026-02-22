@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, ArrowLeft } from 'lucide-react'
+import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -122,12 +122,7 @@ export default function DashboardPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          {selectedTripId && (
-            <button onClick={() => setSelectedTripId(null)} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-          )}
-          <Breadcrumb items={[{ label: 'TrailForge' }]} />
+          <Breadcrumb items={[{ label: 'TrailForge', onClick: () => setSelectedTripId(null) }]} />
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />

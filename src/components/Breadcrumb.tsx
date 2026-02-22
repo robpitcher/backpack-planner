@@ -23,12 +23,30 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
               )}
               {isLast ? (
-                <span
-                  className="truncate text-base font-bold tracking-tight sm:text-lg"
-                  aria-current="page"
-                >
-                  {item.label}
-                </span>
+                item.onClick ? (
+                  <button
+                    onClick={item.onClick}
+                    className="truncate text-base font-bold tracking-tight cursor-pointer sm:text-lg"
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </button>
+                ) : item.href ? (
+                  <Link
+                    to={item.href}
+                    className="truncate text-base font-bold tracking-tight sm:text-lg"
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span
+                    className="truncate text-base font-bold tracking-tight sm:text-lg"
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </span>
+                )
               ) : item.href ? (
                 <Link
                   to={item.href}
