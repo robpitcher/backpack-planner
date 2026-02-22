@@ -1,18 +1,25 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft } from 'lucide-react'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft, UserCircle } from 'lucide-react'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
 import ElevationProfile from '@/components/map/ElevationProfile'
 import WaypointList from '@/components/sidebar/WaypointList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import GearTab from '@/components/gear/GearTab'
 import ItineraryTab from '@/components/itinerary/ItineraryTab'
 import ConditionsTab from '@/components/conditions/ConditionsTab'
 import GPXImportButton from '@/components/map/GPXImportButton'
 import GPXExportButton from '@/components/map/GPXExportButton'
 import ShareToggle from '@/components/ShareToggle'
+import ThemeToggle from '@/components/ThemeToggle'
 import { useTripStore } from '@/stores/tripStore'
 import { useAuthStore } from '@/stores/authStore'
 import { getTrip } from '@/lib/api/trips'
@@ -27,6 +34,7 @@ export default function TripPlannerPage() {
   const days = useTripStore((s) => s.days)
   const trips = useTripStore((s) => s.trips)
   const preferredUnits = useAuthStore((s) => s.preferredUnits)
+  const { logout } = useAuthStore()
   const currentTrip = trips.find((t) => t.id === tripId) ?? null
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -105,9 +113,20 @@ export default function TripPlannerPage() {
               <ShareToggle tripId={tripId} isPublic={isPublic} />
             </>
           )}
-          <span className="hidden text-sm text-muted-foreground sm:inline">
-            {tripId ? `Trip: ${tripId.slice(0, 8)}…` : 'New Trip'}
-          </span>
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
+                <UserCircle className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
