@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
 import TripListItem from '@/components/TripListItem'
 import DashboardMap from '@/components/map/DashboardMap'
+import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import type { TripStatus } from '@/types'
@@ -126,15 +127,7 @@ export default function DashboardPage() {
               <ArrowLeft className="h-4 w-4" />
             </button>
           )}
-          {selectedTripId ? (
-            <button onClick={() => setSelectedTripId(null)} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
-              TrailForge
-            </button>
-          ) : (
-            <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
-              TrailForge
-            </Link>
-          )}
+          <Breadcrumb items={[{ label: 'TrailForge' }]} />
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
