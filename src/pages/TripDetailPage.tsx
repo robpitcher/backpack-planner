@@ -401,6 +401,10 @@ function ReadOnlyMap({
     } else {
       map.once('load', applyData)
     }
+
+    return () => {
+      map.off('load', applyData)
+    }
   }, [routeGeoJSON, waypoints])
 
   return <div ref={containerRef} className="h-80 w-full" />
