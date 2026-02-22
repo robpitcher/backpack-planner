@@ -46,14 +46,14 @@ The deployment outputs will show:
 
 In your repo → Settings → Environments → `dev`, set these variables/secrets:
 
-| Name | Source |
-|------|--------|
-| `AZURE_CLIENT_ID` | `managedIdentityClientId` output from step 2 |
-| `AZURE_TENANT_ID` | Your Azure AD tenant ID (`az account show --query tenantId`) |
-| `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID |
-| `SWA_NAME` | `staticWebAppName` output from step 2 |
-| `VITE_SUPABASE_URL` | Supabase project → Settings → API → Project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase project → Settings → API → anon/public key |
+| Name | Type    | Source |
+|------|---------|--------|
+| `AZURE_CLIENT_ID`       | Secret   | `managedIdentityClientId` output from step 2 |
+| `AZURE_TENANT_ID`       | Secret   | Your Azure AD tenant ID (`az account show --query tenantId`) |
+| `AZURE_SUBSCRIPTION_ID` | Secret   | Your Azure subscription ID |
+| `SWA_NAME`              | Variable | `staticWebAppName` output from step 2 |
+| `VITE_SUPABASE_URL`     | Secret   | Supabase project → Settings → API → Project URL |
+| `VITE_SUPABASE_ANON_KEY`| Secret   | Supabase project → Settings → API → anon/public key |
 
 ### 4. Run Supabase migrations
 
