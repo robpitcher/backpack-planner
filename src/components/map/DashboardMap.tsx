@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Loader2, AlertTriangle } from 'lucide-react'
@@ -70,14 +70,18 @@ export default function DashboardMap({
   useEffect(() => {
     selectedTripIdRef.current = selectedTripId
   }, [selectedTripId])
-  // Compute centroids
-  const centroids: TripCentroid[] = trips
-    .map((t) => {
-      const c = getRouteCentroid(t.route_geojson)
-      if (!c) return null
-      return { tripId: t.id, lng: c[0], lat: c[1] }
-    })
-    .filter((c): c is TripCentroid => c !== null)
+  // Compute centroids (memoised to avoid re-triggering map effects on every render)
+  const centroids = useMemo<TripCentroid[]>(
+    () =>
+      trips
+        .map((t) => {
+          const c = getRouteCentroid(t.route_geojson)
+          if (!c) return null
+          return { tripId: t.id, lng: c[0], lat: c[1] }
+        })
+        .filter((c): c is TripCentroid => c !== null),
+    [trips],
+  )
 
   // Init map
   useEffect(() => {
@@ -161,19 +165,19 @@ export default function DashboardMap({
       }
     }
 
-    // Fit bounds to all markers + waypoints
-    const bounds = new maplibregl.LngLatBounds()
-    for (const c of centroids) {
-      bounds.extend([c.lng, c.lat])
-    }
-    for (const wp of allWaypoints) {
-      bounds.extend([wp.lng, wp.lat])
-    }
-    if (centroids.length > 0 || allWaypoints.length > 0) {
+    // Fit bounds to all markers + waypoints (skip when a trip is selected — drawRoute handles that)
+    if (!selectedTripId && (centroids.length > 0 || allWaypoints.length > 0)) {
+      const bounds = new maplibregl.LngLatBounds()
+      for (const c of centroids) {
+        bounds.extend([c.lng, c.lat])
+      }
+      for (const wp of allWaypoints) {
+        bounds.extend([wp.lng, wp.lat])
+      }
       map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 1200 })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapReady, JSON.stringify(centroids.map((c) => [c.tripId, c.lng, c.lat])), allWaypoints])
+  }, [mapReady, centroids, allWaypoints, selectedTripId])
 
   // Highlight marker on hover
   useEffect(() => {
@@ -230,7 +234,7 @@ export default function DashboardMap({
 
       routeLayerRef.current = tripId
     },
-    [trips, mapReady, centroids],
+    [trips, mapReady],
   )
 
   useEffect(() => {
