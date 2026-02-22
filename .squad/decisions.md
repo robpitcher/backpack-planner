@@ -42,6 +42,49 @@ Any future pages should use this Breadcrumb component in their headers for consi
 
 ---
 
+## Issue #7: Azure Database Deployment for TrailForge
+
+**Date:** 2026-02-22
+**Author:** Elrond
+**Issue:** #7
+**Status:** Awaiting decision (pending Rob clarification)
+
+### Context
+TrailForge is tightly coupled to Supabase (35+ PostgREST API calls, 8 GoTrue auth functions, 15+ RLS policies). Rob clarified he does NOT have Supabase Cloud and wants data on Azure. Elrond evaluated three deployment architectures.
+
+### Options Evaluated
+
+**Option 1: Self-Hosted Supabase on Azure Container Apps**
+- Complexity: 4/5 | Cost: ~$25/mo | Code changes: None | Time: 2–4 days
+- Maintains 100% code compatibility; only environment variable changes needed
+- Requires PostgreSQL Flexible Server + 3–4 Container Apps (Kong, GoTrue, PostgREST, optionally Studio) + SMTP for magic links
+
+**Option 2: Azure-Native (Complete Rewrite)**
+- Complexity: 5/5 | Cost: ~$15/mo | Code changes: 500–800 lines | Time: 2–4 weeks
+- Replaces Supabase entirely with Azure AD B2C + Functions + custom API layer; rewrites all auth, RLS becomes middleware
+- Not viable for MVP—re-architecture project, not deployment task
+
+**Option 3: Supabase Cloud Free Tier**
+- Complexity: 1/5 | Cost: $0/mo | Code changes: None | Time: 30 min
+- Simplest path; data not on Azure but meets MVP timeline
+- Rob said he doesn't have this, but included for completeness if he's open to it
+
+### Recommendation
+**For MVP:** Option 3 (Supabase Cloud) if acceptable. **Otherwise:** Option 1 (self-hosted Supabase on Azure, ~$25/mo, zero code changes).
+
+**Do not pursue Option 2** for MVP. The app was architected for Supabase; fighting that for Azure-native is misaligned investment.
+
+### Decision Needed from Rob
+1. Is Supabase Cloud acceptable? (→ Option 3, deploy in 30 min)
+2. If not, is ~$25/mo acceptable for self-hosted Supabase on Azure? (→ Option 1)
+3. Is data-on-Azure a hard requirement or preference?
+
+### Impact on Infra
+- **Option 3:** Existing Bicep (SWA + UAMI + GitHub Actions) works as-is; add Supabase env vars only.
+- **Option 1:** New Bicep modules needed for Container Apps Environment, PostgreSQL Flexible, container services. Significant `infra/` expansion.
+
+---
+
 ## Issue #5: Waypoint context menu pattern
 
 **Date:** 2026-02-22
