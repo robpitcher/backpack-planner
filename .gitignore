@@ -29,3 +29,6 @@ supabase/.temp/
 
 # Squad AI team state (local-only)
 # .squad/
+
+test-results/
+playwright-report/
