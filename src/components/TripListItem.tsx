@@ -1,6 +1,17 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, Ruler, MapPin } from 'lucide-react'
+import { Calendar, Ruler, MapPin, MoreVertical, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import RenameTripDialog from '@/components/RenameTripDialog'
+import DeleteTripDialog from '@/components/DeleteTripDialog'
 import type { Trip, TripStatus, UnitSystem } from '@/types'
 import { formatDistance } from '@/utils/units'
 import { cn } from '@/lib/utils'
@@ -52,6 +63,7 @@ interface TripListItemProps {
   isHighlighted?: boolean
   onHover?: (tripId: string | null) => void
   onClick?: (tripId: string) => void
+  onDelete?: (tripId: string) => void
 }
 
 export default function TripListItem({
@@ -61,10 +73,13 @@ export default function TripListItem({
   isHighlighted,
   onHover,
   onClick,
+  onDelete,
 }: TripListItemProps) {
   const navigate = useNavigate()
   const dateRange = formatDateRange(trip.start_date, trip.end_date)
   const distance = getRouteDistance(trip.route_geojson)
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const handleClick = () => {
     if (onClick) {
@@ -75,50 +90,104 @@ export default function TripListItem({
   }
 
   return (
-    <button
-      type="button"
-      className={cn(
-        'flex w-full flex-col gap-1 border-b px-3 py-2.5 text-left transition-colors',
-        'hover:bg-accent/50',
-        isSelected && 'bg-accent',
-        isHighlighted && !isSelected && 'bg-accent/30',
-      )}
-      onMouseEnter={() => onHover?.(trip.id)}
-      onMouseLeave={() => onHover?.(null)}
-      onClick={handleClick}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="line-clamp-1 text-sm font-medium text-foreground">
-          {trip.title}
-        </span>
-        <Badge
-          variant="secondary"
-          className={cn('shrink-0 text-[10px] px-1.5 py-0', STATUS_STYLES[trip.status])}
-        >
-          {trip.status}
-        </Badge>
-      </div>
+    <>
+      <button
+        type="button"
+        className={cn(
+          'group flex w-full flex-col gap-1 border-b px-3 py-2.5 text-left transition-colors',
+          'hover:bg-accent/50',
+          isSelected && 'bg-accent',
+          isHighlighted && !isSelected && 'bg-accent/30',
+        )}
+        onMouseEnter={() => onHover?.(trip.id)}
+        onMouseLeave={() => onHover?.(null)}
+        onClick={handleClick}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="line-clamp-1 text-sm font-medium text-foreground">
+            {trip.title}
+          </span>
+          <div className="flex items-center gap-1">
+            <Badge
+              variant="secondary"
+              className={cn('shrink-0 text-[10px] px-1.5 py-0', STATUS_STYLES[trip.status])}
+            >
+              {trip.status}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-3.5 w-3.5" />
+                  <span className="sr-only">Trip actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={() => navigate(`/trip/${trip.id}/plan`)}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRenameOpen(true)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
 
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        {dateRange && (
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3 w-3 shrink-0" />
-            {dateRange}
-          </span>
-        )}
-        {distance != null && (
-          <span className="flex items-center gap-1">
-            <Ruler className="h-3 w-3 shrink-0" />
-            {formatDistance(distance, units)}
-          </span>
-        )}
-        {trip.route_geojson && !distance && (
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3 shrink-0" />
-            Route
-          </span>
-        )}
-      </div>
-    </button>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {dateRange && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3 shrink-0" />
+              {dateRange}
+            </span>
+          )}
+          {distance != null && (
+            <span className="flex items-center gap-1">
+              <Ruler className="h-3 w-3 shrink-0" />
+              {formatDistance(distance, units)}
+            </span>
+          )}
+          {trip.route_geojson && !distance && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3 shrink-0" />
+              Route
+            </span>
+          )}
+        </div>
+      </button>
+
+      <RenameTripDialog
+        tripId={trip.id}
+        currentTitle={trip.title}
+        open={renameOpen}
+        onOpenChange={setRenameOpen}
+      />
+      <DeleteTripDialog
+        tripId={trip.id}
+        tripTitle={trip.title}
+        open={deleteOpen}
+        onOpenChange={(v) => {
+          setDeleteOpen(v)
+          if (!v && onDelete) {
+            // Check if trip was deleted (dialog closed after successful delete)
+          }
+        }}
+        onDeleted={() => onDelete?.(trip.id)}
+      />
+    </>
   )
 }

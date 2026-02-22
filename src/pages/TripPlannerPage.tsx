@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft, UserCircle } from 'lucide-react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, ArrowLeft, UserCircle, Pencil } from 'lucide-react'
+import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
 import { panToWaypoint } from '@/components/map/WaypointLayer'
@@ -28,6 +29,7 @@ import type { Waypoint } from '@/types'
 
 export default function TripPlannerPage() {
   const { tripId } = useParams()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const mapRef = useRef<MapViewHandle>(null)
   const waypoints = useTripStore((s) => s.waypoints)
@@ -37,21 +39,32 @@ export default function TripPlannerPage() {
   const preferredUnits = useAuthStore((s) => s.preferredUnits)
   const { logout } = useAuthStore()
   const currentTrip = trips.find((t) => t.id === tripId) ?? null
+  const [tripName, setTripName] = useState<string>(currentTrip?.title ?? '')
   const [isPublic, setIsPublic] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editingName, setEditingName] = useState('')
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const updateTrip = useTripStore((s) => s.updateTrip)
 
   // Load trip's is_public status
   useEffect(() => {
     if (!tripId) return
     getTrip(tripId).then((res) => {
-      if (res.data) setIsPublic(res.data.is_public)
+      if (res.data) {
+        setIsPublic(res.data.is_public)
+        setTripName(res.data.title)
+      }
     })
   }, [tripId])
 
   // Sync isPublic when trips list updates
   useEffect(() => {
-    if (currentTrip) setIsPublic(currentTrip.is_public)
+    if (currentTrip) {
+      setIsPublic(currentTrip.is_public)
+      setTripName(currentTrip.title)
+    }
   }, [currentTrip])
 
   // Auto-select waypoint from query param (e.g., from dashboard click)
@@ -94,6 +107,49 @@ export default function TripPlannerPage() {
     [selectedWaypointId, waypoints, route],
   )
 
+  const handleBackClick = useCallback(() => {
+    if (selectedWaypointId) {
+      // Deselect waypoint and zoom back to all waypoints
+      setSelectedWaypointId(null)
+      const map = mapRef.current?.getMap() ?? null
+      if (map && waypoints.length > 0) {
+        const bounds = new maplibregl.LngLatBounds()
+        waypoints.forEach((wp) => bounds.extend([wp.lng, wp.lat]))
+        if (route) {
+          const coords = (route as { geometry: { coordinates: number[][] } }).geometry?.coordinates
+          coords?.forEach((c) => bounds.extend(c as [number, number]))
+        }
+        map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 1200 })
+      }
+    } else {
+      navigate('/dashboard')
+    }
+  }, [selectedWaypointId, waypoints, route, navigate])
+
+  const startEditingName = useCallback(() => {
+    setEditingName(tripName)
+    setIsEditingName(true)
+    setTimeout(() => nameInputRef.current?.select(), 0)
+  }, [tripName])
+
+  const saveEditingName = useCallback(async () => {
+    setIsEditingName(false)
+    const trimmed = editingName.trim()
+    if (!trimmed || trimmed === tripName || !tripId) return
+    setTripName(trimmed)
+    const result = await updateTrip(tripId, { title: trimmed })
+    if (result) {
+      toast.success('Trip renamed')
+    } else {
+      setTripName(tripName) // revert on failure
+      toast.error('Failed to rename trip')
+    }
+  }, [editingName, tripName, tripId, updateTrip])
+
+  const cancelEditingName = useCallback(() => {
+    setIsEditingName(false)
+  }, [])
+
   return (
     <div className="flex h-screen min-h-0 w-full flex-col">
       {/* Header bar */}
@@ -112,12 +168,12 @@ export default function TripPlannerPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          <Link to="/dashboard" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground" aria-label="Back to dashboard">
+          <button onClick={handleBackClick} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
             <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
-            TrailForge
-          </Link>
+          </button>
+          <button onClick={handleBackClick} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
+            Trip Planner
+          </button>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
@@ -155,9 +211,31 @@ export default function TripPlannerPage() {
         >
           <Tabs defaultValue="map" className="flex h-full min-h-0 flex-col">
             <div className="shrink-0 border-b px-3 pb-2 pt-3">
-              <h2 className="text-base font-bold tracking-wide">
-                {currentTrip?.name ?? 'Trip Planner'}
-              </h2>
+              {isEditingName ? (
+                <input
+                  ref={nameInputRef}
+                  className="w-full text-base font-bold tracking-wide break-words bg-transparent border-b-2 border-primary outline-none"
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onBlur={saveEditingName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditingName()
+                    if (e.key === 'Escape') cancelEditingName()
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <button
+                  className="group flex w-full items-center gap-1.5 text-left cursor-pointer"
+                  onClick={startEditingName}
+                  title="Click to rename"
+                >
+                  <h2 className="text-base font-bold tracking-wide break-words">
+                    {tripName || 'Trip Planner'}
+                  </h2>
+                  <Pencil className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )}
             </div>
             <TabsList className="mx-2 mt-2 flex h-auto w-auto shrink-0 flex-wrap gap-1">
               <TabsTrigger value="map" className="text-xs px-2 py-1 focus-visible:ring-0 focus-visible:outline-none">

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose } from 'lucide-react'
+import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -85,9 +85,22 @@ export default function DashboardPage() {
 
   const handleWaypointClick = useCallback(
     (tripId: string, waypointId: string) => {
-      navigate(`/trip/${tripId}/plan?waypoint=${waypointId}`)
+      if (selectedTripId) {
+        navigate(`/trip/${tripId}/plan?waypoint=${waypointId}`)
+      } else {
+        setSelectedTripId(tripId)
+      }
     },
-    [navigate],
+    [selectedTripId, navigate],
+  )
+
+  const handleTripDelete = useCallback(
+    (tripId: string) => {
+      if (selectedTripId === tripId) {
+        setSelectedTripId(null)
+      }
+    },
+    [selectedTripId],
   )
 
   return (
@@ -108,9 +121,20 @@ export default function DashboardPage() {
               <PanelLeft className="h-4 w-4" />
             )}
           </Button>
-          <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
-            TrailForge
-          </Link>
+          {selectedTripId && (
+            <button onClick={() => setSelectedTripId(null)} className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer" aria-label="Back">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
+          {selectedTripId ? (
+            <button onClick={() => setSelectedTripId(null)} className="text-base font-bold tracking-tight sm:text-lg cursor-pointer">
+              TrailForge
+            </button>
+          ) : (
+            <Link to="/dashboard" className="text-base font-bold tracking-tight sm:text-lg">
+              TrailForge
+            </Link>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -188,6 +212,7 @@ export default function DashboardPage() {
                   isHighlighted={trip.id === highlightedTripId}
                   onHover={setHighlightedTripId}
                   onClick={handleTripClick}
+                  onDelete={handleTripDelete}
                 />
               ))
             )}
