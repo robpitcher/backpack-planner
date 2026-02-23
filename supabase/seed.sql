@@ -47,8 +47,12 @@ INSERT INTO auth.identities (
   now()
 );
 
-INSERT INTO public.users (id, email, display_name, skill_level, preferred_units) VALUES
-  ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'hiker@example.com', 'Trail Tester', 'intermediate', 'imperial');
+-- Update the auto-created profile with display name and preferences
+UPDATE public.users SET
+  display_name = 'Trail Tester',
+  skill_level = 'intermediate',
+  preferred_units = 'imperial'
+WHERE id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
 -- ============================================================
 -- Sample trips
