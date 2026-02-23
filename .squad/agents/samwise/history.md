@@ -17,3 +17,11 @@
 - **Database schema**: `waypoints.elevation` is `NUMERIC(8,1)`, `days.elevation_gain`/`elevation_loss` are `NUMERIC(8,1)` — no unit documented.
 - **Sea-level edge case**: `hasElevation` check in ElevationProfile excludes Z=0 coordinates, treating sea-level GPS tracks as "no elevation data".
 
+### Drawn Route Elevation Fix (2025-07)
+- **Root cause**: `maplibre-gl-draw` produces only 2D coordinates `[lng, lat]` — no Z values. `ElevationProfile` found `hasElevation = false` and rendered a flat line at 0.
+- **Fix**: Added AWS Terrarium DEM source (`raster-dem`) and enabled terrain on the map. `syncRouteToStore` now calls `map.queryTerrainElevation()` for each coordinate to add Z values before storing the route GeoJSON.
+- **Key change file**: `src/components/map/MapView.tsx` — added `setupTerrain()`, `addElevation()` helpers, called in `onLoad` and style-change handlers.
+- **Terrain source**: Free AWS S3 Terrarium tiles (`s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`), no API key required.
+- **Side effect**: Map now renders 3D terrain with `exaggeration: 1` (natural scale). Appropriate for a hiking app.
+- **queryTerrainElevation returns meters** — matches `ElevationProfile` expectation (it converts meters → feet internally).
+

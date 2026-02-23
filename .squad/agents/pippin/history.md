@@ -104,14 +104,15 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - `/login` route and LoginPage.tsx kept for backward compatibility (AuthGuard redirects, bookmarks).
 - `bg-background` used for divider text background instead of `bg-card` since modal content sits on dialog background.
 
-## Session: 2026-02-23T21:57 — Elevation Bug Investigation (Samwise)
+## Session: 2026-02-23T22:10 — Drawn Route Elevation Fixed (Samwise)
 
-**Focus:** Elevation unit mismatch investigation filed by Samwise (Cartographer).
+**Focus:** Resolve flat elevation profile for user-drawn routes on map.
 
-- **Root Cause:** Meters stored in DB/GPX, displayed as feet in all UI components — systemic unit mismatch.
-- **Secondary Issues:** Hardcoded unit labels ignore user preference (4 components affected), sea-level detection treats Z=0 as "no data", map-placed waypoints lack elevation queries, no unit documentation.
-- **Impact:** WaypointPopup, WaypointList, TripDetailPage, ElevationProfile, WaypointLayer all affected.
-- **Decision Required:** Establish **feet** as internal unit (aligns with existing ElevationProfile code and majority of display logic).
-- **Fixes Needed:** GPX import/export conversion, replace hardcoded "ft" labels with formatElevation using user preference, fix sea-level check, add unit documentation.
-- **Affected Files:** src/lib/gpx/{import,export}.ts, src/components/map/{ElevationProfile,WaypointPopup}.tsx, src/components/sidebar/WaypointList.tsx, src/pages/TripDetailPage.tsx, src/types/index.ts
-- **Status:** Decision inbox merged. Awaiting decision implementation.
+- **Root Cause:** `maplibre-gl-draw` produces 2D-only `[lng, lat]` coordinates; `ElevationProfile` found no Z values and rendered flat line.
+- **Solution:** Added AWS Terrarium DEM (`raster-dem`) terrain source to map; enabled 3D terrain rendering.
+- **Implementation:** Route coordinates enriched with `map.queryTerrainElevation()` before storing GeoJSON in `syncRouteToStore`.
+- **Key Files:** `src/components/map/MapView.tsx` — added `setupTerrain()`, `addElevation()` helpers, called in `onLoad` and style-change handlers.
+- **Terrain Source:** Free AWS S3 Terrarium tiles (`elevation-tiles-prod`), no API key required, returns elevation in meters (matches ElevationProfile expectation).
+- **Side Effect:** Map now renders in 3D with natural terrain relief and 1x exaggeration (appropriate for hiking app).
+- **Impact:** Newly drawn routes show real elevation profiles. Existing routes stored without Z values remain flat until re-drawn.
+- **Build Status:** ✅ Passes. All existing tests pass unchanged.

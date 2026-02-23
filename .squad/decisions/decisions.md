@@ -1,10 +1,37 @@
 # Backpack Planner — Decisions Log
 
-**Last Updated:** 2026-02-23T21:57Z
+**Last Updated:** 2026-02-23T22:10Z
 
 ---
 
 ## Data & Elevation
+
+### Drawn Route Elevation — Terrain DEM Source
+**Date:** 2026-02-23  
+**Author:** Samwise  
+**Requested by:** Rob  
+**Status:** Implemented
+
+#### Context
+When users drew routes on the map, the elevation profile chart stayed flat at 0. The `maplibre-gl-draw` plugin produces only 2D `[lng, lat]` coordinates with no elevation (Z) values. The `ElevationProfile` component requires Z coordinates to render the chart.
+
+#### Decision
+Added an AWS Terrarium raster-dem terrain source to the MapLibre map and enabled 3D terrain rendering. Route coordinates are now enriched with elevation via `map.queryTerrainElevation()` before being stored.
+
+#### Details
+- **Terrain source**: AWS S3 Terrarium tiles (`elevation-tiles-prod`), free, no API key.
+- **Exaggeration**: 1 (natural scale) — no artificial amplification.
+- **queryTerrainElevation** returns meters, matching `ElevationProfile`'s expected input unit.
+- Terrain is re-added after map style changes (liberty ↔ positron toggle).
+- If terrain tiles haven't loaded yet for a given point, the original coordinate is kept as-is (graceful fallback).
+
+#### Impact
+- Map now renders in 3D with natural terrain relief — visually appropriate for a hiking/backpacking app.
+- Newly drawn routes store elevation in their GeoJSON, so the elevation profile chart shows real elevation data.
+- Existing routes stored without Z values will still show flat until re-drawn or edited.
+- `WaypointLayer` could also use `queryTerrainElevation` in the future to populate waypoint elevation on map click.
+
+---
 
 ### Elevation Unit Convention — Investigation & Recommendation
 **Date:** 2026-02-23  
