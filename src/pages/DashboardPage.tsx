@@ -17,6 +17,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import ProfileModal from '@/components/ProfileModal'
+import LoginModal from '@/components/LoginModal'
 import type { TripStatus } from '@/types'
 
 const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
@@ -55,6 +56,7 @@ export default function DashboardPage() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
   const [highlightedTripId, setHighlightedTripId] = useState<string | null>(null)
+  const [loginOpen, setLoginOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const units = userProfile?.preferred_units ?? 'imperial'
@@ -136,7 +138,7 @@ export default function DashboardPage() {
           </Button>
           <ThemeToggle />
           {isGuest ? (
-            <Button variant="ghost" size="icon" aria-label="Sign in" onClick={() => navigate('/login')}>
+            <Button variant="ghost" size="icon" aria-label="Sign in" onClick={() => setLoginOpen(true)}>
               <UserCircle className="h-5 w-5" />
             </Button>
           ) : (
@@ -209,7 +211,7 @@ export default function DashboardPage() {
                 {isGuest ? (
                   <button
                     className="mt-1 text-xs text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer"
-                    onClick={() => navigate('/login')}
+                    onClick={() => setLoginOpen(true)}
                   >
                     Sign in to create your first trip
                   </button>
@@ -238,7 +240,7 @@ export default function DashboardPage() {
           {/* Create button — sticky bottom */}
           <div className="shrink-0 border-t p-2">
             {isGuest ? (
-              <Button className="w-full" variant="secondary" onClick={() => navigate('/login')}>
+              <Button className="w-full" variant="secondary" onClick={() => setLoginOpen(true)}>
                 <LogIn className="mr-1.5 h-4 w-4" />
                 Sign in to Manage Trips
               </Button>
@@ -280,6 +282,7 @@ export default function DashboardPage() {
 
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
+      <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
     </div>
   )
 }
