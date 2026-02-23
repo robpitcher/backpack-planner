@@ -130,7 +130,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <a href="https://github.com/robpitcher/trailforge/tree/dev" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
               <Github className="h-5 w-5" />
             </a>
           </Button>
