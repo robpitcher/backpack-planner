@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { signIn, signUp, signInWithGoogle, signInWithMagicLink } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,6 +33,20 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [signUpSuccess, setSignUpSuccess] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setIsSignUp(false)
+      setEmail('')
+      setPassword('')
+      setError(null)
+      setIsLoading(false)
+      setSignUpSuccess(false)
+      setMagicLinkSent(false)
+      setUseMagicLink(false)
+    }
+  }, [open])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
