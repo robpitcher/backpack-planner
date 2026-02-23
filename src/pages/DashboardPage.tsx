@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
+import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,10 +13,12 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
 import TripListItem from '@/components/TripListItem'
 import DashboardMap from '@/components/map/DashboardMap'
+import { GITHUB_REPO_URL } from '@/lib/constants'
 import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import ProfileModal from '@/components/ProfileModal'
+import LoginModal from '@/components/LoginModal'
 import type { TripStatus } from '@/types'
 
 const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
@@ -44,15 +46,18 @@ function ListSkeleton() {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const session = useAuthStore((s) => s.session)
   const userProfile = useAuthStore((s) => s.userProfile)
   const { logout } = useAuthStore()
   const { isLoading, statusFilter, fetchTrips, setFilter } = useTripStore()
+  const isGuest = !session
   const filteredTrips = useFilteredTrips()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
   const [highlightedTripId, setHighlightedTripId] = useState<string | null>(null)
+  const [loginOpen, setLoginOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const units = userProfile?.preferred_units ?? 'imperial'
@@ -128,24 +133,51 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://github.com/robpitcher/backpack-planner" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
               <Github className="h-5 w-5" />
             </a>
           </Button>
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
-                <UserCircle className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {isGuest ? (
+            <Button variant="ghost" size="icon" aria-label="Sign in" onClick={() => setLoginOpen(true)}>
+              <UserCircle className="h-5 w-5" />
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
+                  <UserCircle className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Perform logout
+                    logout()
+
+                    // Clear any trip-related UI state
+                    if (typeof setSelectedTripId === 'function') {
+                      setSelectedTripId(null)
+                    }
+                    if (typeof setHighlightedTripId === 'function') {
+                      setHighlightedTripId(null)
+                    }
+
+                    // Reset the trip store, if a reset function is exposed
+                    const { reset } = useTripStore.getState()
+                    if (typeof reset === 'function') {
+                      reset()
+                    }
+                  }}
+                >
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
 
@@ -198,9 +230,18 @@ export default function DashboardPage() {
                   <Compass className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <p className="mt-3 text-sm font-medium">No trips yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Create your first trip to get started
-                </p>
+                {isGuest ? (
+                  <button
+                    className="mt-1 text-xs text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer"
+                    onClick={() => setLoginOpen(true)}
+                  >
+                    Sign in to create your first trip
+                  </button>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Create your first trip to get started
+                  </p>
+                )}
               </div>
             ) : (
               filteredTrips.map((trip) => (
@@ -220,10 +261,17 @@ export default function DashboardPage() {
 
           {/* Create button — sticky bottom */}
           <div className="shrink-0 border-t p-2">
-            <Button className="w-full" onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Create Trip
-            </Button>
+            {isGuest ? (
+              <Button className="w-full" variant="secondary" onClick={() => setLoginOpen(true)}>
+                <LogIn className="mr-1.5 h-4 w-4" />
+                Sign in to Manage Trips
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={() => setCreateOpen(true)}>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Create Trip
+              </Button>
+            )}
           </div>
         </aside>
 
@@ -256,6 +304,7 @@ export default function DashboardPage() {
 
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
+      <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
     </div>
   )
 }

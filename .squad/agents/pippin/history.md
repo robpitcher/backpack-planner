@@ -78,3 +78,28 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - On successful auth, the auth store session updates → AuthGuard re-renders → LoginModal closes automatically (open becomes false).
 - Pattern: non-dismissable modals use `showCloseButton={false}` + event `preventDefault()` on `onInteractOutside` and `onEscapeKeyDown`.
 - Card inside modal uses `border-0 shadow-none` to blend with DialogContent background.
+
+## Session: Guest Preview Mode
+
+**Focus:** Allow visitors to preview the dashboard without signing in.
+
+- Removed AuthGuard from `/dashboard` route in App.tsx — dashboard renders for all visitors.
+- Added `isGuest` flag in DashboardPage derived from `!session` (auth store).
+- Guest profile button: plain `<Button>` navigating to `/login` instead of a dropdown menu with profile/logout.
+- Guest sidebar CTA: "Sign in to Manage Trips" (with LogIn icon, `variant="secondary"`) replaces "Create Trip".
+- Theme toggle (ThemeProvider) is auth-independent — works for guests with no changes needed.
+- Map (DashboardMap) is fully interactive for guests — no auth dependency in the map component.
+- AuthGuard kept on `/profile` and `/trip/:id/plan` routes — those still require login.
+- LoginPage.tsx and `/login` route untouched — still works for direct navigation.
+- Pattern: use `isGuest` boolean from auth store session to conditionally render auth-aware vs guest UI in the same component.
+
+## Session: Login Modal on Dashboard
+
+**Focus:** Convert login flow from page navigation to a modal dialog overlaying the dashboard.
+
+- Created `src/components/LoginModal.tsx` — Dialog-based login form following ProfileModal pattern. Uses `showCloseButton={false}`, `sm:max-w-md` width, logo at top, all auth methods (Google, email/password, magic link, sign up).
+- Updated `src/pages/DashboardPage.tsx` — added `loginOpen` state; replaced 3 `navigate('/login')` calls with `setLoginOpen(true)` (profile button for guests, empty-state link, "Sign in to Manage Trips" button).
+- LoginModal closes on successful sign-in via `onOpenChange(false)`. User can also click outside to dismiss.
+- Card inside modal uses `border-0 shadow-none` to blend with DialogContent. DialogHeader is sr-only since the Card provides visible headings.
+- `/login` route and LoginPage.tsx kept for backward compatibility (AuthGuard redirects, bookmarks).
+- `bg-background` used for divider text background instead of `bg-card` since modal content sits on dialog background.
