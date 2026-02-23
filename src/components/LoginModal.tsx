@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { signIn, signUp, signInWithGoogle, signInWithMagicLink } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -335,6 +336,9 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </DialogDescription>
         </DialogHeader>
         {renderContent()}
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          <Link to="/privacy" className="hover:text-foreground" onClick={() => onOpenChange(false)}>Privacy Policy</Link>
+        </p>
       </DialogContent>
     </Dialog>
   )
