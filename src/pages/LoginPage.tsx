@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { signIn, signUp, signInWithGoogle, signInWithMagicLink } from '@/lib/auth'
+import { signIn, signUp, signInWithMagicLink } from '@/lib/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,13 +61,14 @@ export default function LoginPage() {
     }
   }
 
-  async function handleGoogleSignIn() {
-    setError(null)
-    const { error: oauthError } = await signInWithGoogle()
-    if (oauthError) {
-      setError(oauthError.message)
-    }
-  }
+  // TODO: Re-enable when Google OAuth is configured
+  // async function handleGoogleSignIn() {
+  //   setError(null)
+  //   const { error: oauthError } = await signInWithGoogle()
+  //   if (oauthError) {
+  //     setError(oauthError.message)
+  //   }
+  // }
 
   async function handleMagicLink(e: FormEvent) {
     e.preventDefault()
@@ -160,6 +161,7 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {/* TODO: Re-enable when Google OAuth is configured
           <Button
             variant="outline"
             className="w-full"
@@ -197,6 +199,7 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
+          */}
 
           {useMagicLink ? (
             <form onSubmit={handleMagicLink} className="space-y-4">
