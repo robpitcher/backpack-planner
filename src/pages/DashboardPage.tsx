@@ -19,6 +19,8 @@ import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import ProfileModal from '@/components/ProfileModal'
 import LoginModal from '@/components/LoginModal'
+import HobbyNoticeDialog from '@/components/HobbyNoticeDialog'
+import HobbyNoticeBadge from '@/components/HobbyNoticeBadge'
 import type { TripStatus } from '@/types'
 
 const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
@@ -258,7 +260,10 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Create button — sticky bottom */}
+          {/* Hobby notice + Create button — sticky bottom */}
+          <div className="shrink-0 border-t px-2 pt-2">
+            <HobbyNoticeBadge />
+          </div>
           <div className="shrink-0 border-t p-2">
             {isGuest ? (
               <Button className="w-full" variant="secondary" onClick={() => setLoginOpen(true)}>
@@ -309,6 +314,7 @@ export default function DashboardPage() {
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
       <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <HobbyNoticeDialog />
     </div>
   )
 }
