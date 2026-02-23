@@ -12,10 +12,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return (
-    <>
-      {children}
-      <LoginModal open={!session} />
-    </>
-  )
+  if (!session) {
+    return <LoginModal open />
+  }
+
+  return <>{children}</>
 }
