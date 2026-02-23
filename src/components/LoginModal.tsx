@@ -14,6 +14,8 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from '@/components/ui/dialog'
 
 interface LoginModalProps {
@@ -312,6 +314,14 @@ export default function LoginModal({ open }: LoginModalProps) {
         onEscapeKeyDown={preventClose}
         className="max-w-md p-0"
       >
+        <DialogTitle className="sr-only">
+          {isSignUp ? 'Create an account' : 'Sign in to TrailForge'}
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          {isSignUp
+            ? 'Enter your details to create a new TrailForge account.'
+            : 'Enter your credentials to sign in to your TrailForge account.'}
+        </DialogDescription>
         <div className="flex flex-col items-center gap-2 pt-6">
           <img src="/logo-w-text.png" alt="TrailForge" className="h-48 w-auto" />
         </div>
