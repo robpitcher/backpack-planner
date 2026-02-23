@@ -1,6 +1,95 @@
 # Backpack Planner — Decisions Log
 
-**Last Updated:** 2026-02-23T01:39Z
+**Last Updated:** 2026-02-23T22:10Z
+
+---
+
+## Data & Elevation
+
+### Drawn Route Elevation — Terrain DEM Source
+**Date:** 2026-02-23  
+**Author:** Samwise  
+**Requested by:** Rob  
+**Status:** Implemented
+
+#### Context
+When users drew routes on the map, the elevation profile chart stayed flat at 0. The `maplibre-gl-draw` plugin produces only 2D `[lng, lat]` coordinates with no elevation (Z) values. The `ElevationProfile` component requires Z coordinates to render the chart.
+
+#### Decision
+Added an AWS Terrarium raster-dem terrain source to the MapLibre map and enabled 3D terrain rendering. Route coordinates are now enriched with elevation via `map.queryTerrainElevation()` before being stored.
+
+#### Details
+- **Terrain source**: AWS S3 Terrarium tiles (`elevation-tiles-prod`), free, no API key.
+- **Exaggeration**: 1 (natural scale) — no artificial amplification.
+- **queryTerrainElevation** returns meters, matching `ElevationProfile`'s expected input unit.
+- Terrain is re-added after map style changes (liberty ↔ positron toggle).
+- If terrain tiles haven't loaded yet for a given point, the original coordinate is kept as-is (graceful fallback).
+
+#### Impact
+- Map now renders in 3D with natural terrain relief — visually appropriate for a hiking/backpacking app.
+- Newly drawn routes store elevation in their GeoJSON, so the elevation profile chart shows real elevation data.
+- Existing routes stored without Z values will still show flat until re-drawn or edited.
+- `WaypointLayer` could also use `queryTerrainElevation` in the future to populate waypoint elevation on map click.
+
+---
+
+### Elevation Unit Convention — Investigation & Recommendation
+**Date:** 2026-02-23  
+**Author:** Samwise  
+**Requested by:** Rob
+
+#### Context
+Rob reported an elevation bug. Investigation revealed a systemic unit ambiguity across the elevation data pipeline — GPX import, storage, display, and export all handle elevation units inconsistently.
+
+#### Findings
+
+##### 1. CRITICAL: GPX Import/Export Unit Mismatch
+- **GPX standard** stores elevation in **meters**.
+- `parseGPX()` stores waypoint elevation directly from GPX (meters) — no conversion.
+- All display code (`WaypointPopup`, `WaypointList`, `DayCard`, `ItineraryTab`, `TripDetailPage`) treats `Waypoint.elevation` as **feet**.
+- `ElevationProfile.interpolateElevation()` explicitly converts route Z coordinates from meters to feet (`elevMeters / 0.3048`), confirming internal convention is feet.
+- `buildGPX()` exports `wp.elevation` directly into `<ele>` without converting feet→meters.
+- **Impact**: A GPX waypoint at 2000m elevation displays as "2000 ft" (should be ~6562 ft). Exported GPX files have wrong elevation values.
+
+##### 2. BUG: Hardcoded Unit Labels
+- `WaypointPopup.tsx` line 33: `{Math.round(waypoint.elevation)} ft` — ignores user's unit preference.
+- `WaypointList.tsx` line 75: `{Math.round(wp.elevation)} ft` — ignores user's unit preference.
+- `TripDetailPage.tsx` lines 192, 246: `formatElevation(value, 'imperial')` — hardcodes imperial instead of user preference.
+
+##### 3. EDGE CASE: Sea-Level Elevation Detection
+- `ElevationProfile.tsx` line 71: `coords.some((c) => c.length >= 3 && c[2] !== 0)`
+- A GPS track entirely at sea level (Z=0) is treated as "no elevation data" and shows a flat line, even though Z=0 IS valid elevation data.
+
+##### 4. MISSING: No Elevation for Map-Placed Waypoints
+- `WaypointLayer.tsx` creates waypoints without elevation data — no elevation API or terrain query is called when a user clicks the map.
+
+##### 5. MISSING: No Unit Documentation
+- Database schema, TypeScript types, and GPX import/export have no documentation of what unit elevation values are stored in.
+
+#### Recommendation
+
+**Establish a clear convention**: All elevation stored internally (DB + state) should be in **feet** (matching the existing display assumption and ElevationProfile behavior).
+
+##### Fixes needed (in priority order):
+1. **GPX import**: Convert waypoint elevation from meters to feet on import (`metersToFeet(ele)`).
+2. **GPX export**: Convert waypoint elevation from feet to meters on export (`feetToMeters(wp.elevation)`).
+3. **Hardcoded units**: Replace hardcoded "ft" with `formatElevation(value, units)` in WaypointPopup and WaypointList. Pass user's preferred units to TripDetailPage.
+4. **Sea-level check**: Change `hasElevation` to `coords.some((c) => c.length >= 3)`.
+5. **Documentation**: Add unit comments to `Waypoint.elevation` type and DB schema.
+6. **Map waypoint elevation**: Consider querying terrain elevation when placing waypoints on map (future enhancement).
+
+#### Decision Needed
+
+Confirm that **feet** is the correct internal unit for elevation storage. This aligns with the existing ElevationProfile code and the majority of display code.
+
+#### Files Affected
+- `src/lib/gpx/import.ts` — add meters→feet conversion
+- `src/lib/gpx/export.ts` — add feet→meters conversion
+- `src/components/map/ElevationProfile.tsx` — fix sea-level check
+- `src/components/map/WaypointPopup.tsx` — use formatElevation with units
+- `src/components/sidebar/WaypointList.tsx` — use formatElevation with units
+- `src/pages/TripDetailPage.tsx` — use user's preferred units
+- `src/types/index.ts` — add unit documentation comments
 
 ---
 

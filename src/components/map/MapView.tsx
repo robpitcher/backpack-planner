@@ -24,6 +24,38 @@ import { kilometersToMiles } from '@/utils/units'
 const FREE_STYLE_LIBERTY = 'https://tiles.openfreemap.org/styles/liberty'
 const FREE_STYLE_POSITRON = 'https://tiles.openfreemap.org/styles/positron'
 
+// Terrain DEM source for elevation queries
+const TERRAIN_DEM_URL =
+  'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'
+
+/** Add raster-dem source and enable terrain so queryTerrainElevation works. */
+function setupTerrain(map: maplibregl.Map) {
+  if (!map.getSource('terrain-dem')) {
+    map.addSource('terrain-dem', {
+      type: 'raster-dem',
+      tiles: [TERRAIN_DEM_URL],
+      encoding: 'terrarium',
+      tileSize: 256,
+      maxzoom: 15,
+    })
+  }
+  map.setTerrain({ source: 'terrain-dem', exaggeration: 1 })
+}
+
+/** Enrich 2-D coordinates with elevation (Z) from the terrain source. */
+function addElevation(
+  map: maplibregl.Map,
+  coords: number[][],
+): number[][] {
+  return coords.map((c) => {
+    const elev = map.queryTerrainElevation(
+      new maplibregl.LngLat(c[0], c[1]),
+    )
+    // Keep existing Z if terrain query fails
+    return elev != null ? [c[0], c[1], elev] : c
+  })
+}
+
 // Draw styling — trail-colored route line with vertex circles
 const DRAW_STYLES: object[] = [
   // Active line (while drawing)
@@ -115,14 +147,17 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: 
         )
       : 0
 
-  // Sync draw state → store
+  // Sync draw state → store (enriching with terrain elevation)
   const syncRouteToStore = useCallback(
     (coords: number[][]) => {
-      setRouteCoords(coords)
-      if (coords.length >= 2) {
+      const map = mapRef.current
+      const enriched =
+        map && coords.length >= 2 ? addElevation(map, coords) : coords
+      setRouteCoords(enriched)
+      if (enriched.length >= 2) {
         const geojson: RouteGeoJSON = {
           type: 'Feature',
-          geometry: { type: 'LineString', coordinates: coords },
+          geometry: { type: 'LineString', coordinates: enriched },
           properties: {},
         }
         setRoute(geojson as unknown as Record<string, unknown>)
@@ -171,6 +206,7 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: 
 
     // Load existing route from store
     const onLoad = () => {
+      setupTerrain(map)
       setIsLoading(false)
       setMapReady(true)
       if (storedRoute) {
@@ -224,8 +260,9 @@ const MapView = forwardRef<MapViewHandle, { tripId?: string; onWaypointSelect?: 
       const styleUrl = style === 'liberty' ? FREE_STYLE_LIBERTY : FREE_STYLE_POSITRON
       map.setStyle(styleUrl)
 
-      // Restore features after new style loads
+      // Restore features and terrain after new style loads
       map.once('style.load', () => {
+        setupTerrain(map)
         if (features.features.length > 0) {
           draw.set(features as GeoJSON.FeatureCollection)
         }

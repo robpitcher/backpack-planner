@@ -103,3 +103,16 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - Card inside modal uses `border-0 shadow-none` to blend with DialogContent. DialogHeader is sr-only since the Card provides visible headings.
 - `/login` route and LoginPage.tsx kept for backward compatibility (AuthGuard redirects, bookmarks).
 - `bg-background` used for divider text background instead of `bg-card` since modal content sits on dialog background.
+
+## Session: 2026-02-23T22:10 — Drawn Route Elevation Fixed (Samwise)
+
+**Focus:** Resolve flat elevation profile for user-drawn routes on map.
+
+- **Root Cause:** `maplibre-gl-draw` produces 2D-only `[lng, lat]` coordinates; `ElevationProfile` found no Z values and rendered flat line.
+- **Solution:** Added AWS Terrarium DEM (`raster-dem`) terrain source to map; enabled 3D terrain rendering.
+- **Implementation:** Route coordinates enriched with `map.queryTerrainElevation()` before storing GeoJSON in `syncRouteToStore`.
+- **Key Files:** `src/components/map/MapView.tsx` — added `setupTerrain()`, `addElevation()` helpers, called in `onLoad` and style-change handlers.
+- **Terrain Source:** Free AWS S3 Terrarium tiles (`elevation-tiles-prod`), no API key required, returns elevation in meters (matches ElevationProfile expectation).
+- **Side Effect:** Map now renders in 3D with natural terrain relief and 1x exaggeration (appropriate for hiking app).
+- **Impact:** Newly drawn routes show real elevation profiles. Existing routes stored without Z values remain flat until re-drawn.
+- **Build Status:** ✅ Passes. All existing tests pass unchanged.
