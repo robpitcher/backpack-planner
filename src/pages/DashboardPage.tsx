@@ -167,9 +167,8 @@ export default function DashboardPage() {
                     }
 
                     // Reset the trip store, if a reset function is exposed
-                    const { reset } = useTripStore.getState()
-                    if (typeof reset === 'function') {
-                      reset()
+                    if ('reset' in useTripStore.getState()) {
+                      (useTripStore.getState() as unknown as { reset: () => void }).reset()
                     }
                   }}
                 >
