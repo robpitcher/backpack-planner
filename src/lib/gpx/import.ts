@@ -1,6 +1,17 @@
 import { gpx } from '@tmcw/togeojson'
 import type { WaypointType } from '@/types'
 
+/** Strip HTML tags and escape HTML meta-characters from user-provided text. */
+function sanitizeText(text: string): string {
+  return text
+    .replace(/<[^>]*>/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 export interface GPXImportResult {
   route: GeoJSON.Feature | null
   waypoints: GPXWaypoint[]
@@ -57,7 +68,7 @@ export function parseGPX(gpxString: string): GPXImportResult {
     .map((f) => {
       const [lng, lat, ele] = (f.geometry as GeoJSON.Point).coordinates
       return {
-        name: (f.properties?.name as string) || 'Waypoint',
+        name: sanitizeText((f.properties?.name as string) || 'Waypoint'),
         lat,
         lng,
         elevation: ele != null ? ele : null,

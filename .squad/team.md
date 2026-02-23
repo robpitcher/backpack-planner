@@ -17,5 +17,6 @@
 | Gandalf | Product Manager | Requirements, features, user stories, roadmap | 📝 PM |
 | Galadriel | Designer / UX | UI/UX design, visual consistency, accessibility | ⚛️ Design |
 | Elrond | DevOps / Cloud Architect | Azure deployment, CI/CD, infrastructure | ⚙️ DevOps |
+| Faramir | Security Engineer | Security audits, XSS/injection, input sanitization | 🔒 Security |
 | Scribe | (silent) | Memory, decisions, session logs | 📋 Scribe |
 | Ralph | Work Monitor | — | 🔄 Monitor |
