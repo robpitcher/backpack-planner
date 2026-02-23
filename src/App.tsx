@@ -26,14 +26,7 @@ function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <AuthGuard>
-                <DashboardPage />
-              </AuthGuard>
-            }
-          />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route
             path="/profile"
             element={

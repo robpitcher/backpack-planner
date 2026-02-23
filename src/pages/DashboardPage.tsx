@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
+import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -44,9 +44,11 @@ function ListSkeleton() {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const session = useAuthStore((s) => s.session)
   const userProfile = useAuthStore((s) => s.userProfile)
   const { logout } = useAuthStore()
   const { isLoading, statusFilter, fetchTrips, setFilter } = useTripStore()
+  const isGuest = !session
   const filteredTrips = useFilteredTrips()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
@@ -133,19 +135,25 @@ export default function DashboardPage() {
             </a>
           </Button>
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
-                <UserCircle className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {isGuest ? (
+            <Button variant="ghost" size="icon" aria-label="Sign in" onClick={() => navigate('/login')}>
+              <UserCircle className="h-5 w-5" />
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Profile menu" className="cursor-pointer">
+                  <UserCircle className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
 
@@ -220,10 +228,17 @@ export default function DashboardPage() {
 
           {/* Create button — sticky bottom */}
           <div className="shrink-0 border-t p-2">
-            <Button className="w-full" onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Create Trip
-            </Button>
+            {isGuest ? (
+              <Button className="w-full" variant="secondary" onClick={() => navigate('/login')}>
+                <LogIn className="mr-1.5 h-4 w-4" />
+                Sign in to Manage Trips
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={() => setCreateOpen(true)}>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Create Trip
+              </Button>
+            )}
           </div>
         </aside>
 
