@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { signIn, signUp, signInWithGoogle, signInWithMagicLink } from '@/lib/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
@@ -310,6 +310,9 @@ export default function LoginPage() {
           </Button>
         </CardFooter>
       </Card>
+      <p className="mt-4 text-center text-[11px] text-muted-foreground">
+        <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+      </p>
       </div>
     </div>
   )

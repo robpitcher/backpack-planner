@@ -10,6 +10,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import ProfilePage from '@/pages/ProfilePage'
 import TripPlannerPage from '@/pages/TripPlannerPage'
 import TripDetailPage from '@/pages/TripDetailPage'
+import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 
 function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -44,6 +45,7 @@ function App() {
             }
           />
           <Route path="/trip/:tripId" element={<TripDetailPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
         <Toaster />
       </BrowserRouter>
