@@ -277,10 +277,10 @@ export default function DashboardPage() {
               </Button>
             )}
           </div>
-          <div className="shrink-0 border-t px-3 py-2 text-center">
-            <Link to="/privacy" className="text-[11px] text-muted-foreground hover:text-foreground">
-              Privacy Policy
-            </Link>
+          <div className="shrink-0 border-t px-3 py-2 text-center text-[11px] text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+            <span className="mx-1.5">·</span>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
           </div>
         </aside>
 
