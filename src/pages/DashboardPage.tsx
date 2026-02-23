@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -271,6 +271,11 @@ export default function DashboardPage() {
                 Create Trip
               </Button>
             )}
+          </div>
+          <div className="shrink-0 border-t px-3 py-2 text-center">
+            <Link to="/privacy" className="text-[11px] text-muted-foreground hover:text-foreground">
+              Privacy Policy
+            </Link>
           </div>
         </aside>
 
