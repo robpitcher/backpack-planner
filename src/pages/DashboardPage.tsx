@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTripStore, useFilteredTrips } from '@/stores/tripStore'
 import TripListItem from '@/components/TripListItem'
 import DashboardMap from '@/components/map/DashboardMap'
+import { GITHUB_REPO_URL } from '@/lib/constants'
 import Breadcrumb from '@/components/Breadcrumb'
 import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
@@ -132,7 +133,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://github.com/robpitcher/trailforge/tree/dev" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
               <Github className="h-5 w-5" />
             </a>
           </Button>
