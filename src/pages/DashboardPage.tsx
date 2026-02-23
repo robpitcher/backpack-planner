@@ -133,6 +133,9 @@ export default function DashboardPage() {
           </Button>
           <Breadcrumb items={[{ label: 'TrailForge', onClick: () => setSelectedTripId(null) }]} />
         </div>
+        <p className="hidden flex-1 text-center text-[11px] leading-tight text-muted-foreground sm:block">
+          TrailForge is a personal hobby project — not a professional navigation tool. Please don&apos;t rely on it as your only source of trip planning. Stay safe out there.
+        </p>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
             <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">

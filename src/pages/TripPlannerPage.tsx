@@ -160,6 +160,9 @@ export default function TripPlannerPage() {
             { label: 'Trip Planner', onClick: resetMapView },
           ]} />
         </div>
+        <p className="hidden flex-1 text-center text-[11px] leading-tight text-muted-foreground sm:block">
+          TrailForge is a personal hobby project — not a professional navigation tool. Please don&apos;t rely on it as your only source of trip planning. Stay safe out there.
+        </p>
         <div className="flex items-center gap-2 sm:gap-3">
           {tripId && (
             <>
