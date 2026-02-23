@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
+import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -181,7 +181,8 @@ export default function DashboardPage() {
           )}
         </div>
       </header>
-      <div className="border-b border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-center text-[11px] text-muted-foreground">
+      <div className="flex items-center justify-center gap-2 border-b border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-center text-xs font-semibold text-muted-foreground">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-500" />
         TrailForge is a personal hobby project — not a professional navigation tool. Please don&apos;t rely on it as your only source of trip planning. Stay safe out there.
       </div>
 
