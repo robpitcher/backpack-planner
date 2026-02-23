@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil, Github } from 'lucide-react'
+import { Map, Backpack, CalendarDays, CloudSun, PanelLeftClose, PanelLeft, UserCircle, Pencil, Github, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import maplibregl from 'maplibre-gl'
 import MapView, { type MapViewHandle } from '@/components/map/MapView'
@@ -190,6 +190,10 @@ export default function TripPlannerPage() {
           </DropdownMenu>
         </div>
       </header>
+      <div className="flex items-center justify-center gap-2 border-b border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-center text-xs font-semibold text-muted-foreground">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-500" />
+        TrailForge is a personal hobby project — not a professional navigation tool. Please don&apos;t rely on it as your only source of trip planning. Stay safe out there.
+      </div>
 
       {/* Main layout: sidebar + map */}
       <div className="flex min-h-0 flex-1 overflow-hidden">

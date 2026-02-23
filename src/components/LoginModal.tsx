@@ -4,6 +4,7 @@ import { signIn, signUp, signInWithMagicLink } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Card,
   CardContent,
@@ -34,6 +35,8 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [signUpSuccess, setSignUpSuccess] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
+  const [agreedTerms, setAgreedTerms] = useState(false)
+  const [agreedSafety, setAgreedSafety] = useState(false)
 
   // Reset state when modal closes
   useEffect(() => {
@@ -46,6 +49,8 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
       setSignUpSuccess(false)
       setMagicLinkSent(false)
       setUseMagicLink(false)
+      setAgreedTerms(false)
+      setAgreedSafety(false)
     }
   }, [open])
 
@@ -274,11 +279,44 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
                   />
                 </div>
 
+                {isSignUp && (
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="login-modal-terms"
+                      checked={agreedTerms}
+                      onCheckedChange={(v) => setAgreedTerms(v === true)}
+                      disabled={isLoading}
+                    />
+                    <Label htmlFor="login-modal-terms" className="text-xs leading-snug font-normal">
+                      I agree to the{' '}
+                      <Link to="/terms" className="text-primary underline underline-offset-2 hover:text-primary/80" onClick={() => onOpenChange(false)}>Terms &amp; Conditions</Link>
+                      {' '}and{' '}
+                      <Link to="/privacy" className="text-primary underline underline-offset-2 hover:text-primary/80" onClick={() => onOpenChange(false)}>Privacy Policy</Link>
+                    </Label>
+                  </div>
+                )}
+
+                {isSignUp && (
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="login-modal-safety"
+                      checked={agreedSafety}
+                      onCheckedChange={(v) => setAgreedSafety(v === true)}
+                      disabled={isLoading}
+                    />
+                    <Label htmlFor="login-modal-safety" className="text-xs leading-snug font-normal">
+                      I understand TrailForge is a hobby project and proof of concept. It is not a
+                      professional navigation or safety tool. I am solely responsible for my own
+                      safety and trip planning decisions.
+                    </Label>
+                  </div>
+                )}
+
                 {error && (
                   <p className="text-sm text-destructive">{error}</p>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && (!agreedTerms || !agreedSafety))}>
                   {isLoading
                     ? isSignUp
                       ? 'Creating account…'
@@ -341,6 +379,8 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
         {renderContent()}
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           <Link to="/privacy" className="hover:text-foreground" onClick={() => onOpenChange(false)}>Privacy Policy</Link>
+          <span className="mx-1.5">·</span>
+          <Link to="/terms" className="hover:text-foreground" onClick={() => onOpenChange(false)}>Terms</Link>
         </p>
       </DialogContent>
     </Dialog>

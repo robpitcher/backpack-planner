@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github } from 'lucide-react'
+import { LogIn, Plus, Compass, UserCircle, PanelLeft, PanelLeftClose, Github, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,6 +19,8 @@ import ThemeToggle from '@/components/ThemeToggle'
 import CreateTripDialog from '@/components/CreateTripDialog'
 import ProfileModal from '@/components/ProfileModal'
 import LoginModal from '@/components/LoginModal'
+import HobbyNoticeDialog from '@/components/HobbyNoticeDialog'
+import HobbyNoticeBadge from '@/components/HobbyNoticeBadge'
 import type { TripStatus } from '@/types'
 
 const FILTER_OPTIONS: { label: string; value: TripStatus }[] = [
@@ -179,6 +181,10 @@ export default function DashboardPage() {
           )}
         </div>
       </header>
+      <div className="flex items-center justify-center gap-2 border-b border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-center text-xs font-semibold text-muted-foreground">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-500" />
+        TrailForge is a personal hobby project — not a professional navigation tool. Please don&apos;t rely on it as your only source of trip planning. Stay safe out there.
+      </div>
 
       {/* Main layout: sidebar + map */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -258,7 +264,10 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Create button — sticky bottom */}
+          {/* Hobby notice + Create button — sticky bottom */}
+          <div className="shrink-0 border-t px-2 pt-2">
+            <HobbyNoticeBadge />
+          </div>
           <div className="shrink-0 border-t p-2">
             {isGuest ? (
               <Button className="w-full" variant="secondary" onClick={() => setLoginOpen(true)}>
@@ -272,10 +281,10 @@ export default function DashboardPage() {
               </Button>
             )}
           </div>
-          <div className="shrink-0 border-t px-3 py-2 text-center">
-            <Link to="/privacy" className="text-[11px] text-muted-foreground hover:text-foreground">
-              Privacy Policy
-            </Link>
+          <div className="shrink-0 border-t px-3 py-2 text-center text-[11px] text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+            <span className="mx-1.5">·</span>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
           </div>
         </aside>
 
@@ -309,6 +318,7 @@ export default function DashboardPage() {
       <CreateTripDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
       <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <HobbyNoticeDialog />
     </div>
   )
 }

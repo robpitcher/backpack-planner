@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Card,
   CardContent,
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const [signUpSuccess, setSignUpSuccess] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
+  const [agreedTerms, setAgreedTerms] = useState(false)
+  const [agreedSafety, setAgreedSafety] = useState(false)
 
   const navigate = useNavigate()
   const session = useAuthStore((s) => s.session)
@@ -266,11 +269,44 @@ export default function LoginPage() {
               />
             </div>
 
+            {isSignUp && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="login-terms"
+                  checked={agreedTerms}
+                  onCheckedChange={(v) => setAgreedTerms(v === true)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="login-terms" className="text-xs leading-snug font-normal">
+                  I agree to the{' '}
+                  <Link to="/terms" className="text-primary underline underline-offset-2 hover:text-primary/80">Terms &amp; Conditions</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" className="text-primary underline underline-offset-2 hover:text-primary/80">Privacy Policy</Link>
+                </Label>
+              </div>
+            )}
+
+            {isSignUp && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="login-safety"
+                  checked={agreedSafety}
+                  onCheckedChange={(v) => setAgreedSafety(v === true)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="login-safety" className="text-xs leading-snug font-normal">
+                  I understand TrailForge is a hobby project and proof of concept. It is not a
+                  professional navigation or safety tool. I am solely responsible for my own
+                  safety and trip planning decisions.
+                </Label>
+              </div>
+            )}
+
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && (!agreedTerms || !agreedSafety))}>
               {isLoading
                 ? isSignUp
                   ? 'Creating account…'
@@ -315,6 +351,8 @@ export default function LoginPage() {
       </Card>
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
         <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+        <span className="mx-1.5">·</span>
+        <Link to="/terms" className="hover:text-foreground">Terms</Link>
       </p>
       </div>
     </div>
