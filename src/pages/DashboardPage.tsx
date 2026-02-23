@@ -206,9 +206,18 @@ export default function DashboardPage() {
                   <Compass className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <p className="mt-3 text-sm font-medium">No trips yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Create your first trip to get started
-                </p>
+                {isGuest ? (
+                  <button
+                    className="mt-1 text-xs text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer"
+                    onClick={() => navigate('/login')}
+                  >
+                    Sign in to create your first trip
+                  </button>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Create your first trip to get started
+                  </p>
+                )}
               </div>
             ) : (
               filteredTrips.map((trip) => (
