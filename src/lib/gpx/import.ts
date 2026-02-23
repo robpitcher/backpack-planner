@@ -1,5 +1,11 @@
 import { gpx } from '@tmcw/togeojson'
 import type { WaypointType } from '@/types'
+import { escape } from 'he'
+
+/** Escape HTML meta-characters from user-provided text. */
+function sanitizeText(text: string): string {
+  return escape(text)
+}
 
 export interface GPXImportResult {
   route: GeoJSON.Feature | null
@@ -57,7 +63,7 @@ export function parseGPX(gpxString: string): GPXImportResult {
     .map((f) => {
       const [lng, lat, ele] = (f.geometry as GeoJSON.Point).coordinates
       return {
-        name: (f.properties?.name as string) || 'Waypoint',
+        name: sanitizeText((f.properties?.name as string) || 'Waypoint'),
         lat,
         lng,
         elevation: ele != null ? ele : null,

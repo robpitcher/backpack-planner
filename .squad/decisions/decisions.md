@@ -1,6 +1,31 @@
 # Backpack Planner — Decisions Log
 
-**Last Updated:** 2026-02-22T20:24Z
+**Last Updated:** 2026-02-22T23:58Z
+
+---
+
+## Security & Vulnerability Management
+
+### XSS Defense-in-Depth: GPX Import Text Sanitization
+**Date:** 2026-02-22  
+**Author:** Faramir  
+**Alert:** CodeQL #1 — `js/xss-through-dom` (CWE-79, HIGH)
+
+#### Context
+CodeQL flagged `src/lib/gpx/import.ts` line 22: `DOMParser.parseFromString()` parses user-uploaded GPX XML, and `@tmcw/togeojson` extracts text content (waypoint names) from the resulting DOM nodes. These strings flow into the app data model and are rendered in React components. While React JSX auto-escapes text content, `waypointUtils.ts` uses `innerHTML` for map markers — a pattern that could become an XSS vector if user data ever flows there.
+
+#### Decision
+Added a `sanitizeText()` function in `src/lib/gpx/import.ts` that strips HTML tags and escapes HTML meta-characters (`& < > " '`) from user-controllable strings at the parse boundary, before they enter the app's data model.
+
+#### Rationale
+- **Defense-in-depth**: Sanitize at the data boundary regardless of downstream rendering behavior.
+- **Resolves CodeQL alert**: Eliminates the `js/xss-through-dom` finding.
+- **Future-proofs**: Protects against future code paths that might use these strings in `innerHTML`, `href`, or other injection-sensitive contexts.
+- **Minimal change**: Single function, applied only to extracted text properties. All 12 existing tests pass unchanged.
+
+#### Impact
+- Any new text properties extracted from GPX DOM nodes (e.g., `description`, `comment`) should also be passed through `sanitizeText()`.
+- The `innerHTML` pattern in `waypointUtils.ts` should be monitored — if waypoint names are ever rendered there, they must be sanitized.
 
 ---
 
