@@ -1,15 +1,10 @@
 import { gpx } from '@tmcw/togeojson'
 import type { WaypointType } from '@/types'
+import { escape } from 'he'
 
-/** Strip HTML tags and escape HTML meta-characters from user-provided text. */
+/** Escape HTML meta-characters from user-provided text. */
 function sanitizeText(text: string): string {
-  return text
-    .replace(/<[^>]*>/g, '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
+  return escape(text)
 }
 
 export interface GPXImportResult {
