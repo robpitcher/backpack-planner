@@ -1,6 +1,6 @@
 # Backpack Planner — Decisions Log
 
-**Last Updated:** 2026-02-22T23:58Z
+**Last Updated:** 2026-02-23T01:39Z
 
 ---
 
@@ -296,6 +296,29 @@ Changed fallback theme from `'dark'` to `'deep-forest'` for new users (no localS
 **Rationale:**
 - Sun/Moon toggle was holdover from two-theme system. With six themes, generic icon more appropriate.
 - Deep Forest default showcases new theme work and differentiates app's visual identity.
+
+### Login Modal on Dashboard
+**Date:** 2026-02-23  
+**Author:** Pippin  
+**Requested by:** Rob  
+**Status:** Implemented
+
+Rob requested converting the guest login flow on the dashboard from `navigate('/login')` to a modal dialog that overlays the dashboard with a blurred background, matching the ProfileModal pattern.
+
+**Decisions:**
+- Created `src/components/LoginModal.tsx` — a dismissable Dialog wrapping the full login/signup form. Follows the ProfileModal pattern (`open`/`onOpenChange` props, shadcn Dialog).
+- `DashboardPage.tsx` now opens LoginModal via `setLoginOpen(true)` instead of navigating to `/login` for all three guest CTAs (profile button, empty-state link, "Sign in to Manage Trips" button).
+- `/login` route and `LoginPage.tsx` kept intact for backward compatibility (AuthGuard redirects, bookmarks).
+
+**Implementation Details:**
+- `showCloseButton={false}` — no X button; user can click outside overlay to dismiss.
+- `sm:max-w-md` — wider dialog to accommodate the login form.
+- Logo (`/logo-w-text.png`) displayed at top of dialog content.
+- On successful sign-in, `onOpenChange(false)` closes the modal.
+- Card uses `border-0 shadow-none` to blend seamlessly with dialog background.
+- Backdrop blur (`backdrop-blur-sm`) applied via DialogOverlay (set globally in ProfileModal work).
+
+**Rationale:** Modal keeps users in the dashboard context without page navigation, consistent with ProfileModal pattern. Guests preview the dashboard while signing in.
 
 ---
 
