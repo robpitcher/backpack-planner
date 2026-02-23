@@ -67,3 +67,14 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - DashboardPage, TripPlannerPage, AppHeader all updated to open ProfileModal instead of navigating to /profile.
 - `/profile` route kept in App.tsx for backwards compatibility.
 - User preference: Rob prefers modal-based editing over page navigation so users stay in context.
+
+## Session: Login Modal
+
+**Focus:** Convert login from a dedicated page to a non-dismissable modal over the dashboard.
+
+- Created `src/components/LoginModal.tsx` — non-closeable Dialog-based login form. Uses `showCloseButton={false}`, `onInteractOutside`/`onEscapeKeyDown` with `preventDefault()` to block dismissal. `onOpenChange` is a no-op.
+- Updated `src/components/AuthGuard.tsx` — no longer redirects to `/login`. Instead renders children (the page) with `<LoginModal open={!session} />` overlay. Dashboard renders blurred behind it via the existing `backdrop-blur-sm` on DialogOverlay.
+- Updated `src/pages/LoginPage.tsx` — simplified to a `<Navigate to="/dashboard" replace />` redirect for backward compatibility.
+- On successful auth, the auth store session updates → AuthGuard re-renders → LoginModal closes automatically (open becomes false).
+- Pattern: non-dismissable modals use `showCloseButton={false}` + event `preventDefault()` on `onInteractOutside` and `onEscapeKeyDown`.
+- Card inside modal uses `border-0 shadow-none` to blend with DialogContent background.
