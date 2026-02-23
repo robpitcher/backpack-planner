@@ -103,3 +103,15 @@ All three frontend issues completed and orchestrated by Scribe. Decisions moved 
 - Card inside modal uses `border-0 shadow-none` to blend with DialogContent. DialogHeader is sr-only since the Card provides visible headings.
 - `/login` route and LoginPage.tsx kept for backward compatibility (AuthGuard redirects, bookmarks).
 - `bg-background` used for divider text background instead of `bg-card` since modal content sits on dialog background.
+
+## Session: 2026-02-23T21:57 — Elevation Bug Investigation (Samwise)
+
+**Focus:** Elevation unit mismatch investigation filed by Samwise (Cartographer).
+
+- **Root Cause:** Meters stored in DB/GPX, displayed as feet in all UI components — systemic unit mismatch.
+- **Secondary Issues:** Hardcoded unit labels ignore user preference (4 components affected), sea-level detection treats Z=0 as "no data", map-placed waypoints lack elevation queries, no unit documentation.
+- **Impact:** WaypointPopup, WaypointList, TripDetailPage, ElevationProfile, WaypointLayer all affected.
+- **Decision Required:** Establish **feet** as internal unit (aligns with existing ElevationProfile code and majority of display logic).
+- **Fixes Needed:** GPX import/export conversion, replace hardcoded "ft" labels with formatElevation using user preference, fix sea-level check, add unit documentation.
+- **Affected Files:** src/lib/gpx/{import,export}.ts, src/components/map/{ElevationProfile,WaypointPopup}.tsx, src/components/sidebar/WaypointList.tsx, src/pages/TripDetailPage.tsx, src/types/index.ts
+- **Status:** Decision inbox merged. Awaiting decision implementation.

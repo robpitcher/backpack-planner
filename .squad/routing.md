@@ -10,8 +10,7 @@
 | Test, spec, coverage, edge case, quality, assertion | Legolas |
 | Feature idea, requirements, user story, roadmap, prioritize, MVP | Gandalf |
 | UX, design, visual, accessibility, color, typography, layout design | Galadriel |
-| Map, MapLibre, route, waypoint, elevation, GPX | Pippin (UI) + Gimli (API) |
-| Azure, deploy, CI/CD, infrastructure, Docker, pipeline, hosting, domain, SSL | Elrond |
+| Map, MapLibre, route, waypoint, elevation, GPX, geospatial, terrain, coordinates | Samwise (primary) + Pippin (UI) |
 | Security, XSS, injection, sanitize, vulnerability, CVE, CSRF, auth audit, RLS audit | Faramir |
 | Gear, checklist, template | Pippin (UI) + Gimli (API) |
 
