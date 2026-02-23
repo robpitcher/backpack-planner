@@ -152,7 +152,28 @@ export default function DashboardPage() {
                 <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Perform logout
+                    logout()
+
+                    // Clear any trip-related UI state
+                    if (typeof setSelectedTripId === 'function') {
+                      setSelectedTripId(null)
+                    }
+                    if (typeof setHighlightedTripId === 'function') {
+                      setHighlightedTripId(null)
+                    }
+
+                    // Reset the trip store, if a reset function is exposed
+                    const { reset } = useTripStore.getState()
+                    if (typeof reset === 'function') {
+                      reset()
+                    }
+                  }}
+                >
+                  Log out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
