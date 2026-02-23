@@ -25,6 +25,7 @@ export default function LoginPage() {
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState(false)
+  const [agreedSafety, setAgreedSafety] = useState(false)
 
   const navigate = useNavigate()
   const session = useAuthStore((s) => s.session)
@@ -285,11 +286,27 @@ export default function LoginPage() {
               </div>
             )}
 
+            {isSignUp && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="login-safety"
+                  checked={agreedSafety}
+                  onCheckedChange={(v) => setAgreedSafety(v === true)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="login-safety" className="text-xs leading-snug font-normal">
+                  I understand TrailForge is a hobby project and proof of concept. It is not a
+                  professional navigation or safety tool. I am solely responsible for my own
+                  safety and trip planning decisions.
+                </Label>
+              </div>
+            )}
+
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && !agreedTerms)}>
+            <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && (!agreedTerms || !agreedSafety))}>
               {isLoading
                 ? isSignUp
                   ? 'Creating account…'

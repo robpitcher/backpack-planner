@@ -36,6 +36,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [useMagicLink, setUseMagicLink] = useState(false)
   const [agreedTerms, setAgreedTerms] = useState(false)
+  const [agreedSafety, setAgreedSafety] = useState(false)
 
   // Reset state when modal closes
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
       setMagicLinkSent(false)
       setUseMagicLink(false)
       setAgreedTerms(false)
+      setAgreedSafety(false)
     }
   }, [open])
 
@@ -294,11 +296,27 @@ export default function LoginModal({ open, onOpenChange }: LoginModalProps) {
                   </div>
                 )}
 
+                {isSignUp && (
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="login-modal-safety"
+                      checked={agreedSafety}
+                      onCheckedChange={(v) => setAgreedSafety(v === true)}
+                      disabled={isLoading}
+                    />
+                    <Label htmlFor="login-modal-safety" className="text-xs leading-snug font-normal">
+                      I understand TrailForge is a hobby project and proof of concept. It is not a
+                      professional navigation or safety tool. I am solely responsible for my own
+                      safety and trip planning decisions.
+                    </Label>
+                  </div>
+                )}
+
                 {error && (
                   <p className="text-sm text-destructive">{error}</p>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && !agreedTerms)}>
+                <Button type="submit" className="w-full" disabled={isLoading || (isSignUp && (!agreedTerms || !agreedSafety))}>
                   {isLoading
                     ? isSignUp
                       ? 'Creating account…'

@@ -12,6 +12,7 @@ import TripPlannerPage from '@/pages/TripPlannerPage'
 import TripDetailPage from '@/pages/TripDetailPage'
 import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 import TermsPage from '@/pages/TermsPage'
+import HobbyBanner from '@/components/HobbyBanner'
 
 function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -24,6 +25,7 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <HobbyBanner />
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<LoginPage />} />
