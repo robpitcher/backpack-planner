@@ -7,7 +7,9 @@ SET search_path = ''
 AS $$
 BEGIN
   INSERT INTO public.users (id, email)
-  VALUES (NEW.id, NEW.email);
+  VALUES (NEW.id, NEW.email)
+  ON CONFLICT (id) DO UPDATE
+    SET email = EXCLUDED.email;
   RETURN NEW;
 END;
 $$;
